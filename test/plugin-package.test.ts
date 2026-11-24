@@ -209,3 +209,66 @@ describe("Distributable payload", () => {
     expect(Buffer.byteLength(bundle)).toBeLessThan(4 * 1024 * 1024);
   });
 });
+
+/**
+ * npm 包的形状（真正的“打包 → 安装 → 运行”自检在 scripts/check-package.mjs，发布前由 prepublishOnly 运行）。
+ * 安装器从“插件根”复制 PLUGIN_PAYLOAD；插件根既可能是仓库，也可能是装在 node_modules 里的这个包，
+ * 所以 `files` 必须覆盖安装器要复制的每一项，又不能把源码和测试带进去。
+ */
+describe("npm package (package.json)", () => {
+  const files = pkg["files"] as string[];
+  const shipped = new Set(files.map((entry) => entry.replace(/\/$/, "")));
+
+  it("can be published and installed as the `ensemble` command", () => {
+    expect(pkg["private"]).not.toBe(true);
+    expect(pkg["license"]).toBe("MIT");
+    expect(pkg["bin"]).toEqual({ ensemble: "dist/ensemble.mjs" });
+    expect(existsSync(join(root, "dist", "ensemble.mjs"))).toBe(true);
+    expect(readFileSync(join(root, "dist", "ensemble.mjs"), "utf8").startsWith("#!/usr/bin/env node\n")).toBe(true);
+    expect(String(pkg["engines"]["node"])).toMatch(/^>=22\./);
+  });
+
+  it("whitelists everything the installer copies (npm always adds README.md and LICENSE) plus NOTICE", () => {
+    for (const entry of PLUGIN_PAYLOAD) {
+      if (entry === "README.md" || entry === "LICENSE") continue;
+      expect(shipped.has(entry), entry).toBe(true);
+    }
+    expect(shipped.has("NOTICE")).toBe(true);
+    expect(existsSync(join(root, "LICENSE"))).toBe(true);
+  });
+
+  it("whitelists only things that exist, and no sources, tests, vendored code, scripts or docs", () => {
+    for (const entry of files) {
+      expect(existsSync(join(root, entry)), entry).toBe(true);
+      expect(entry, entry).not.toMatch(/^(src|test|vendor|scripts|docs|node_modules|\.tmp|\.git)(\/|$)/);
+    }
+  });
+
+  it("does not make the Cursor SDK a dependency of the package (its licence forbids redistribution)", () => {
+    for (const field of ["dependencies", "optionalDependencies", "peerDependencies", "bundledDependencies", "bundleDependencies"]) {
+      expect(JSON.stringify(pkg[field] ?? {}), field).not.toContain("@cursor/sdk");
+    }
+  });
+});
+
+describe("Third-party notices (dist/THIRD-PARTY-NOTICES.txt)", () => {
+  const text = readFileSync(join(root, "dist", "THIRD-PARTY-NOTICES.txt"), "utf8").replace(/\r\n/g, "\n");
+
+  it("repeats the repository NOTICE and carries the licence texts it points at", () => {
+    expect(text).toContain(readFileSync(join(root, "NOTICE"), "utf8").replace(/\r\n/g, "\n").trim());
+    expect(text).toContain("TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION"); // Apache-2.0（vendor/mosoo-agent-driver）
+    expect(text).toContain("SIL OPEN FONT LICENSE Version 1.1");
+  });
+
+  it("is in step with the pinned versions of the libraries that get bundled (rebuild with `npm run build` when this fails)", () => {
+    const pinned = pkg["devDependencies"] as Record<string, string>;
+    for (const name of ["@modelcontextprotocol/sdk", "zod", "ajv", "vestig", "react", "react-dom"]) {
+      expect(text, name).toContain(`\n${name} ${pinned[name]}\nLicense: `);
+    }
+  });
+
+  it("says that the Cursor SDK is not part of the package", () => {
+    expect(text).toMatch(/Cursor SDK \(@cursor\/sdk\) is not bundled/);
+    expect(text).not.toContain("\n@cursor/sdk 1.");
+  });
+});

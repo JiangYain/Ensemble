@@ -53,6 +53,8 @@ async function makeWorld(): Promise<World> {
   await put(join(pluginRoot, "dist", "web", "assets", "app.js"), "// app");
   await put(join(pluginRoot, "dist", "web", "assets", "app.js.map"), "{}");
   await put(join(pluginRoot, "README.md"), "# Ensemble");
+  await put(join(pluginRoot, "LICENSE"), "MIT License");
+  await put(join(pluginRoot, "NOTICE"), "Ensemble");
   // 以下内容不属于分发内容，不应被复制。
   await put(join(pluginRoot, "src", "secret.ts"), "export {}");
   await put(join(pluginRoot, "node_modules", "dep", "index.js"), "// dep");
@@ -152,6 +154,8 @@ describe("installCursor", () => {
       ".cursor-plugin/plugin.json",
       ".ensemble-install.json",
       ".mcp.json",
+      "LICENSE",
+      "NOTICE",
       "README.md",
       "assets/logo.svg",
       "dist/ensemble.mjs",

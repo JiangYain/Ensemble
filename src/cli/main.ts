@@ -29,7 +29,8 @@ import type { HarnessInfo, SessionSummary } from "@shared/types";
 
 const USAGE = `Ensemble ${appVersion()}
 
-用法：node dist/ensemble.mjs <命令> [选项]
+用法：ensemble <命令> [选项]
+      （从源码目录运行时写作 node dist/ensemble.mjs <命令>）
 
 命令
   serve [--port N] [--no-idle-exit] [--dev]   启动本地服务

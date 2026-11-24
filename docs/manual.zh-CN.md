@@ -264,7 +264,7 @@ DSH 一列是 2026-11-16 在同一台机器上、用 dsh 0.2.2-rc.1（DeepSeek H
 ## 命令行
 
 ```text
-node dist/ensemble.mjs <命令>
+ensemble <命令>                                （从源码目录运行时写作 node dist/ensemble.mjs <命令>；`ensemble` 是 npm 包的命令名，见“开发”一节）
   serve [--port N] [--no-idle-exit] [--dev]   启动本地服务（通常由 MCP 桥按需拉起）
   mcp                                          以 stdio 运行 MCP 桥
   open [会话 id]                               在系统浏览器里打开面板
@@ -460,6 +460,26 @@ npx vitest run --project node src/server/executors/process-list.test.ts src/serv
 
 看门狗脚本（`skills/ensemble-delegate/scripts/watch.mjs`）是纯 ESM、无依赖的独立文件，要能脱离本仓库运行（它随 `skills/` 被安装器原样复制，不经过 `scripts/build.mjs`，也不进 `dist/ensemble.mjs`），所以它自己带了几份与应用同口径的小拷贝：`formatDuration`、`sliceHead` / `sliceTail`（与 `src/shared/safe-slice.ts` 同一语义）、`clip` / `shortenPath`、`harnessLabel`、`isSettled`（对应应用里的 `isSessionSettled`）、`attentionKey` 与 `describeAttention` 的措辞、`resolveHome`。这些拷贝由 `test/watch-script.copies.test.ts` 与 `test/watch-wake.test.ts` 逐项对照应用里的实现（后者含 emoji 逐刀对照；`SessionPhase` 与 `AttentionKind` 各多一个取值，对照测试也会红，提醒去教脚本）。脚本里的判断逻辑都是时间由参数传入的纯函数（`test/watch-script.test.ts`）；巡检用可替换的读取函数驱动（`test/watch-script.pass.test.ts`），所以测试不等真实时间。测试夹具在 `test/watch-script.fixtures.ts`（值得留意的样本放在 `test/watch-script.shared.fixtures.ts`），唤醒、状态文件与来源过滤的新测试在 `test/watch-wake.test.ts`：合并窗口与时钟都走注入的 `sleep` / `now`，不等真实时间。
 
+### 打包成 npm 包（还没有发布）
+
+`package.json` 已按 npm 包配好，但**还没有发布到 registry**：包名 `ensemble` 在 npm 上已被别的项目占用（2026-11-24 查过），用什么名字（或作用域）要由维护者定，发布也要用维护者自己的 npm 账号。所以仓库首页 README 的安装提示词仍是“克隆仓库，再运行 `node dist/ensemble.mjs …`”；包发布之后，它与“快速开始”里的命令改成 `npx -y <包名>@latest …` 即可，其余不变。
+
+- `bin` 把 `ensemble` 命令指向 `dist/ensemble.mjs`；`files` 是白名单：`dist/`、插件清单与 MCP 配置、`skills/`、`assets/`、`NOTICE`，再加 npm 一定会带的 `package.json`、`README.md`、`LICENSE`。源码、测试、`vendor/`、构建脚本与文档都不进包（`npm pack` 当前是 48 个文件、约 1.04 MiB）。`test/plugin-package.test.ts` 守着这份白名单：它必须覆盖安装器要复制的每一项（`PLUGIN_PAYLOAD`），而且不能含源码类目录。
+- 包**没有任何依赖**：服务、MCP 桥与命令行已经打成单个文件，网页是预构建好的静态文件。`@cursor/sdk` 的许可证不允许随包分发，所以它既不是这个包的依赖、也不在包里，仍由 `install sdk` 在用户同意后装到 `<ENSEMBLE_HOME>/runtime`。
+- 装上包和把插件接进宿主是两件事：`npm install` / `npx` 只放下文件，不会（也不该）去改 Codex、Cursor 的用户级配置，所以没有 `postinstall`。接进宿主仍是 `ensemble install cursor|codex`，同样默认只展示计划、`--yes` 才写。它把包里的插件文件复制到宿主的插件目录，此后宿主启动 MCP 桥用的是复制出来的那份，不再依赖 npm 缓存或 `npx` 的临时目录。升级时重新运行 `install`（已经装上的目录有安装标记，会被覆盖），再让宿主重新载入；正在运行的本地服务要 `ensemble stop` 之后才会换成新版本。
+- 不推荐 `npm i -g github:JiangYain/Ensemble` 这类直接从 GitHub 安装：`package.json` 里有 `build` 脚本，npm 对 git 依赖会先在克隆里把 devDependencies 一并装上再准备，又慢又重。这一行为用一个同样带 `build` 脚本的探针包验证过，没有对本仓库真的跑完；发布到 registry 之后按包名安装不受影响。
+- 构建同时生成 `dist/THIRD-PARTY-NOTICES.txt`（见“第三方与许可”）。它和 `dist/ensemble.mjs`、`dist/web` 一样随仓库提交；改了依赖、`NOTICE` 或打包内容之后用 `npm run build` 重新生成，`test/plugin-package.test.ts` 会在它落后于 `package.json` 里锁定的版本，或没有带上 `NOTICE` 的最新内容时变红。
+
+```powershell
+node scripts/check-package.mjs           # 打包 → 像用户那样装进临时前缀 → 运行 → 把插件装进临时的用户目录 → 启动其中的 MCP 桥、让它拉起服务并用模拟执行端走一遍委派 → 停服务 → 卸载；全程在临时目录里，不碰真实的状态目录、npm 全局前缀与你的 Cursor / Codex 配置
+node scripts/check-package.mjs --clean   # 发布前用：另外要求工作区没有未提交的改动
+npm publish                              # prepublishOnly 先 npm run build，再跑 check-package.mjs --clean
+```
+
+发布要由维护者自己做：先在 `package.json` 里换一个可用的包名（带作用域的包第一次发布要加 `--access public`），再 `npm login`（新账号需要两步验证）。已发布的版本号不能重用，撤回也受 npm 政策限制，所以发布前先看一眼 `npm pack --dry-run` 列出的文件。
+
+**验证范围**：`check-package.mjs` 的检查在 Windows、Node 22.22.2、npm 10.9.7 上通过；故意改坏 4 处来检验它自己，都被抓到。`npx` 那一项用的是 tgz 的 `file:` 地址，所以“从 registry 下载再运行”这一段，以及 `npm publish` 在真实账号下的行为都没有走过（`ensemble` 这个名字已被占用，按 npm 的规则现在直接发布应当被拒绝，没有实际试过）。`bin` 在 Linux / macOS 上由 npm 建符号链接并设可执行位，没有在这两个系统上验证。
+
 ## 已知限制
 
 - Cursor 执行端已在 2026-11-14 经 Ensemble 完成一次真实只读任务；纠偏、取消、恢复和只读强制仍需分别以真实账号验证。
@@ -492,6 +512,7 @@ npx vitest run --project node src/server/executors/process-list.test.ts src/serv
 - `@cursor/sdk` 的许可证不允许随插件分发，所以不会被打进 `dist/`，而是在运行时按需加载（`ENSEMBLE_CURSOR_SDK` → 随包安装 → `<ENSEMBLE_HOME>/runtime`）。
 - `test/fixtures/agent-plugins/` 是 Agent Plugins 1.0.0 官方发布的 JSON Schema 原文（取自 agent-plugins.org，2026-11-07），仅用于离线校验插件包。
 - `vendor/mosoo-agent-driver` 是 Mosoo `agent-driver`（提交 `49df36e…`，Apache-2.0）的**本地副本**（`LICENSE.txt`、根目录 `NOTICE` 与逐文件修改清单见 `vendor/mosoo-agent-driver/VENDORING.md`），我们在里面新增了 Cursor SDK 后端，Cursor 执行端经它的 Kernel 驱动。上游的 Pi / Codex 后端依赖 POSIX 路径模型与 `/proc`，在原生 Windows 上无法运行，所以没有登记；Codex 与 Pi 仍由 Ensemble 直接对接它们自己的控制接口（Codex app-server、Pi RPC），详见 `docs/findings.md`。
-- 各 npm 依赖遵循各自的许可证；字体来自 `@fontsource-variable/inter`、`@fontsource-variable/jetbrains-mono` 和 Cormorant Garamond（均为 OFL，Cormorant 的许可随网页构建产物提供）。执行端标识来源见 [`src/web/marks/README.md`](../src/web/marks/README.md)。
+- 打进 `dist/ensemble.mjs` 与 `dist/web` 的 npm 依赖遵循各自的许可证（目前是 MIT、ISC 与 BSD-3-Clause）。这些许可证要求把版权与许可声明随再分发的内容一起带上，而打包工具会把它们丢掉，所以构建时（`scripts/build.mjs` → `scripts/notices.mjs`）按这一次实际打进产物的依赖生成 `dist/THIRD-PARTY-NOTICES.txt`：逐个列出依赖的版本、许可证与许可证全文，开头附上 `NOTICE`，末尾附上 Apache-2.0 与 OFL 的全文。它随 npm 包分发，也随 `install` 复制进插件目录。构建时只放行 MIT、ISC、BSD-2-Clause、BSD-3-Clause、0BSD、Apache-2.0：遇到没有许可证文本、或许可证不在这份名单里的依赖会直接失败，让人先看过再决定；`vestig` 没有随包带许可证文件，用 `scripts/third-party/` 里取自它上游仓库的原文补上。开发期依赖（Vite、Vitest、TypeScript 等）不在产物里，不在此列；`@cursor/sdk` 同理（见上一条）。这份清单覆盖打包进产物的 npm 依赖，以及 `NOTICE` 里点名的许可证全文；打包工具自己注入的少量辅助代码、执行端与模型的标识（来源见下面一条），不在这份清单里逐条列出。
+- 字体来自 `@fontsource-variable/inter`、`@fontsource-variable/jetbrains-mono` 和 Cormorant Garamond（均为 OFL，Cormorant 的许可随网页构建产物提供）。执行端标识来源见 [`src/web/marks/README.md`](../src/web/marks/README.md)。
 
 更多已验证的事实与证据见 [docs/findings.md](findings.md)；对 mosoo 的技术借鉴评估见 [docs/research/mosoo-technical-reference.md](research/mosoo-technical-reference.md)。

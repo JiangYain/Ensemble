@@ -4,6 +4,9 @@ Copyright (c) 2026 Chord. Ensemble's own code is released under the MIT License 
 本仓库还包含下列第三方内容，它们各自遵循自己的许可证与商标规定，不受 Ensemble 的 MIT 许可证改变。
 This repository also ships the third-party material below. It stays under its own license and trademark terms.
 
+构建产物 dist/ 里另有一份 dist/THIRD-PARTY-NOTICES.txt（构建时按实际打进包里的内容生成）：它列出被打包进 dist/ensemble.mjs 与 dist/web 的 npm 依赖及其许可证全文，并带上本文件与下面各份许可证全文；它随 npm 包与安装出来的插件目录一起分发。
+The built dist/ also carries dist/THIRD-PARTY-NOTICES.txt, generated at build time from what is actually bundled: it lists the npm packages inside dist/ensemble.mjs and dist/web with their license texts, repeats this file and carries the license texts referred to below. It travels with the npm package and with the installed plugin directory.
+
 ------------------------------------------------------------------------
 mosoo-agent-driver（@mosoo/agent-driver）
     版权所有 LangGenius, Inc. 及贡献者

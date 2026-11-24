@@ -67080,7 +67080,7 @@ import { fileURLToPath as fileURLToPath2 } from "node:url";
 var PLUGIN_NAME = "ensemble";
 var INSTALL_MARKER = ".ensemble-install.json";
 var INSTALL_TARGETS = ["codex", "cursor", "sdk"];
-var PLUGIN_PAYLOAD = ["plugin.json", "mcp.json", ".mcp.json", ".cursor-plugin", "skills", "assets", "dist", "README.md"];
+var PLUGIN_PAYLOAD = ["plugin.json", "mcp.json", ".mcp.json", ".cursor-plugin", "skills", "assets", "dist", "README.md", "LICENSE", "NOTICE"];
 function codexPluginDir(userHome) {
   return join14(userHome, "plugins", PLUGIN_NAME);
 }
@@ -67434,7 +67434,8 @@ async function runInstall(options) {
 init_format();
 var USAGE = `Ensemble ${appVersion()}
 
-\u7528\u6CD5\uFF1Anode dist/ensemble.mjs <\u547D\u4EE4> [\u9009\u9879]
+\u7528\u6CD5\uFF1Aensemble <\u547D\u4EE4> [\u9009\u9879]
+      \uFF08\u4ECE\u6E90\u7801\u76EE\u5F55\u8FD0\u884C\u65F6\u5199\u4F5C node dist/ensemble.mjs <\u547D\u4EE4>\uFF09
 
 \u547D\u4EE4
   serve [--port N] [--no-idle-exit] [--dev]   \u542F\u52A8\u672C\u5730\u670D\u52A1

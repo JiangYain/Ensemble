@@ -22,8 +22,12 @@ export const INSTALL_MARKER = ".ensemble-install.json";
 export type InstallTarget = "codex" | "cursor" | "sdk";
 export const INSTALL_TARGETS: readonly InstallTarget[] = ["codex", "cursor", "sdk"];
 
-/** 随插件分发的内容（相对插件根）。不复制源码、测试和 node_modules。 */
-export const PLUGIN_PAYLOAD: readonly string[] = ["plugin.json", "mcp.json", ".mcp.json", ".cursor-plugin", "skills", "assets", "dist", "README.md"];
+/**
+ * 随插件分发的内容（相对插件根）。不复制源码、测试和 node_modules。
+ * 插件根可能是源码仓库，也可能是 npm 包（`package.json` 的 `files` 必须覆盖这里除 README.md 之外的每一项，
+ * 由 test/plugin-package.test.ts 守着）。LICENSE 与 NOTICE 跟着走：dist/ 里打包进了第三方代码，分发它的地方要带上声明。
+ */
+export const PLUGIN_PAYLOAD: readonly string[] = ["plugin.json", "mcp.json", ".mcp.json", ".cursor-plugin", "skills", "assets", "dist", "README.md", "LICENSE", "NOTICE"];
 
 export interface InstallDeps {
   /** 当前这份插件的根目录（含 plugin.json、mcp.json 与 dist/）。 */
