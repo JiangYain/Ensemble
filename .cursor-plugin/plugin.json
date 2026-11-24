@@ -1,0 +1,14 @@
+{
+  "name": "ensemble",
+  "displayName": "Ensemble",
+  "version": "0.1.0",
+  "description": "把工作委派给完整的 Cursor、Codex、Pi、Claude Code、OpenCode、DSH 等 Harness 会话，并在网页里实时观察、纠偏与接管。",
+  "author": { "name": "Chord" },
+  "homepage": "https://github.com/JiangYain/Ensemble",
+  "repository": "https://github.com/JiangYain/Ensemble",
+  "license": "MIT",
+  "keywords": ["delegation", "sub-agent", "harness", "cursor", "codex", "pi", "claude", "mcp", "orchestration"],
+  "logo": "./assets/logo.svg",
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json"
+}

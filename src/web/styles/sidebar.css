@@ -1,0 +1,745 @@
+/* 聚焦视图右侧栏内容，以及设置窗口里的执行端卡片。卡片展开后的“主 Agent 可选的模型”（筛选、勾选行、推理强度、默认模型）在 model-pick.css；用量环与访问权限仍在这里。 */
+
+/* ───────────────────────── 侧栏内容 ───────────────────────── */
+
+.origin-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+}
+
+.origin-card .origin-mark {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  background: var(--card);
+  color: var(--text-2);
+}
+
+.origin-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.origin-card-title {
+  font-size: 13px;
+  font-weight: 540;
+  line-height: 1.4;
+}
+
+.origin-card-sub {
+  display: flex;
+  gap: 8px;
+  color: var(--text-3);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.origin-card-ws {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 3px;
+  overflow: hidden;
+  color: var(--text-3);
+  font-size: 11.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.origin-card-ws svg {
+  flex: none;
+}
+
+.parent-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px 9px;
+  background: var(--soft);
+  color: var(--text-3);
+  font-size: 12px;
+  line-height: 1.3;
+  text-align: left;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.parent-link:hover {
+  background: var(--soft-hover);
+}
+
+.parent-link strong {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text);
+  font-weight: 520;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 汇聚：跟随多个会话时每个上级一行，行与行之间只隔 4px（4px 网格）；与单个上级的那一行同一套外观，不加框线与圆角。 */
+.parent-links {
+  display: grid;
+  gap: 4px;
+}
+
+.task-text {
+  font-size: 13px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.ctx-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ctx {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 9px 11px 10px;
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.ctx-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  color: var(--text-3);
+}
+
+.ctx-head > svg {
+  flex: none;
+}
+
+.ctx-title {
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 520;
+}
+
+.ctx-path {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-2);
+  font-size: 11.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+a.ctx-path {
+  color: var(--teal);
+  text-decoration: none;
+}
+
+a.ctx-path:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ctx-note {
+  color: var(--text-3);
+  font-size: 11.5px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.ctx-text {
+  color: var(--text-2);
+  font-size: 12.5px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.children {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.child {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  background: var(--soft);
+  color: var(--text-3);
+  text-align: left;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.child:hover {
+  background: var(--soft-hover);
+}
+
+.child-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.child-title {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 12.5px;
+  font-weight: 520;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.child-sub {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-3);
+  font-size: 11.5px;
+  line-height: 1;
+}
+
+/* 值得留意的事实：每条一句话，左侧一道暖色细线（与“纠偏”消息同一档暖色）；不用红色，也不配图标——它陈述事实，不宣布出了问题。 */
+.attn-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.attn-list li {
+  padding: 1px 0 1px 10px;
+  border-left: 2px solid var(--amber);
+  color: var(--text-2);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.6;
+}
+
+/* 消息记录：每条只有一行，点击后主时间线滚动到对应消息。左侧细线按类型着色。 */
+.msg-log {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.msg-log li {
+  border-left: 2px solid var(--line-strong);
+}
+
+.msg-log li[data-kind="steer"] {
+  border-left-color: var(--amber);
+}
+
+.msg-log li[data-kind="follow_up"] {
+  border-left-color: var(--blue);
+}
+
+.msg-log-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  min-height: 30px;
+  padding: 0 8px 1px 10px;
+  text-align: left;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.msg-log-head:hover {
+  background: var(--soft);
+}
+
+.msg-log-head:active {
+  background: var(--soft-hover);
+}
+
+.msg-log-author {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 520;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 时间与投递状态的小方块靠右；方块只表达阶段，具体文字在悬停提示里。 */
+.msg-log-end {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  color: var(--text-3);
+  font-size: 11.5px;
+}
+
+.msg-log-dot {
+  display: inline-grid;
+  place-items: center;
+  width: 10px;
+  height: 10px;
+}
+
+.files {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.files li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ctx-meter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ctx-meter-bar {
+  flex: 1;
+  min-width: 80px;
+  height: 5px;
+  background: var(--track);
+}
+
+.ctx-meter-bar i {
+  display: block;
+  height: 100%;
+  background: var(--seg-active);
+  transition: width 0.4s var(--ease-out);
+}
+
+.ctx-meter-bar i[data-high] {
+  background: var(--amber);
+}
+
+/* ───────────────────────── 用量环 ─────────────────────────
+   方环，一周 = 全部 token。从上边中点出发，四段按顺时针由浅到深：缓存命中 → 新输入 → 推理 → 其余输出。
+   单色灰阶，不引入新的强调色（朱砂留给“正在进行”）。 */
+
+.usage {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  align-items: center;
+  gap: 18px;
+}
+
+.usage [data-seg="cached"] {
+  --seg: #d6d6d6;
+}
+
+.usage [data-seg="input"] {
+  --seg: #a0a0a0;
+}
+
+.usage [data-seg="reasoning"] {
+  --seg: #686868;
+}
+
+.usage [data-seg="output"] {
+  --seg: #171717;
+}
+
+.usage-figure {
+  position: relative;
+  width: 96px;
+  height: 96px;
+}
+
+.usage-ring {
+  display: block;
+  overflow: visible;
+}
+
+.usage-seg {
+  /* 每一段是同一条方形路径上的一截虚线：两端是平头、拐角是尖角（miter）；段与段之间的缺口靠 dasharray 留出，缺口不落在拐角上（lib/usage.ts 的 clearCorners）。 */
+  stroke-linecap: butt;
+  stroke-linejoin: miter;
+  stroke: var(--seg);
+  /* 只在入场的那一刻从 0 长出来；之后数据变化走 transition，所以用 backwards 而不是 both。 */
+  animation: usage-draw calc(var(--dur) * 3.5) var(--ease-out) backwards;
+  transition:
+    stroke-dasharray calc(var(--dur) * 3) var(--ease-out),
+    stroke-dashoffset calc(var(--dur) * 3) var(--ease-out),
+    opacity var(--dur) var(--ease-out);
+}
+
+.usage-seg[data-dim] {
+  opacity: 0.18;
+}
+
+@keyframes usage-draw {
+  from {
+    stroke-dasharray: 0 var(--usage-perimeter);
+  }
+}
+
+/* 中心留给总量；比环的内框（78px 见方）小一圈，免得挡住环上的悬停。 */
+.usage-total {
+  position: absolute;
+  inset: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.usage-total-value {
+  color: var(--text);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: proportional-nums lining-nums;
+}
+
+.usage-total-label {
+  color: var(--text-3);
+  font-size: 10.5px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.usage-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.usage-row {
+  display: grid;
+  grid-template-columns: 8px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  min-height: 22px;
+  padding-bottom: 1px;
+  transition: opacity var(--dur) var(--ease-out);
+}
+
+.usage[data-hot] .usage-row:not([data-active]) {
+  opacity: 0.42;
+}
+
+.usage-swatch {
+  width: 8px;
+  height: 8px;
+  background: var(--seg);
+}
+
+.usage-label {
+  overflow: hidden;
+  color: var(--text-2);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.usage-value {
+  color: var(--text);
+  font-size: 12.5px;
+}
+
+/* 费用、上下文占用不属于 token 构成，用一条细线和环分开。 */
+.usage + .kvs {
+  margin-top: 6px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+/* ───────────────────────── 执行端卡片（设置窗口内） ───────────────────────── */
+
+/*
+ * 执行端是一张表：外框一圈 --line-strong，卡与卡之间一条 --line；卡里的头、设置提示、各分区之间同样是一条 --line，相邻的块共用一条线。
+ * 外圈只有 .hlist 的一圈线，卡自己不画外框。
+ * 头部与下面的模型行共用同一组列（见 overlays.css 开头的版式说明）：徽标 40 ｜ 名称 1fr ｜ 状态 --col-status ｜ 箭头 16，行的左右内缩 --pad，列间距 --gutter。
+ */
+.hlist {
+  box-shadow: 0 0 0 1px var(--line-strong);
+}
+
+.hcard {
+  display: flex;
+  flex-direction: column;
+  background: var(--card);
+}
+
+.hcard + .hcard {
+  border-top: 1px solid var(--line);
+}
+
+.hcard[data-status="unavailable"] .harness-tile {
+  opacity: 0.55;
+}
+
+/*
+ * 头部是整条开合钮，通栏、不缩进：悬停的底色铺满整行；行高 64 = 徽标 40 + 上下各 12。徽标、名称、状态、箭头各占一列。
+ * 没有可展开内容的卡片，头部是同样版式的 span，没有悬停、没有箭头。
+ */
+.hcard-head {
+  margin: 0;
+  padding: 0;
+  font: inherit;
+}
+
+.hcard-toggle {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) var(--col-status, 112px) 16px;
+  align-items: center;
+  column-gap: var(--gutter, 16px);
+  width: 100%;
+  min-height: 64px;
+  padding: 12px var(--pad, 16px);
+  color: inherit;
+  text-align: left;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+button.hcard-toggle:hover {
+  background: var(--soft);
+}
+
+button.hcard-toggle:active {
+  background: var(--soft-hover);
+}
+
+/* 通栏的开合钮：聚焦环画在行的里面，不被表的外框盖掉。 */
+button.hcard-toggle:focus-visible {
+  outline-offset: -2px;
+}
+
+.hcard-chevron {
+  flex: none;
+  justify-self: center;
+  color: var(--text-3);
+  transition: transform var(--dur) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+
+button.hcard-toggle:hover .hcard-chevron {
+  color: var(--text);
+}
+
+.hcard[data-open] .hcard-chevron {
+  transform: rotate(180deg);
+}
+
+/* 名称列：名字一行 20、说明一行 16，中间 4，合起来 40，与徽标等高、各自竖向居中。 */
+.hcard-title {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.hcard-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14.5px;
+  font-weight: 560;
+  line-height: 20px;
+}
+
+.hcard-sub {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 12px;
+  color: var(--text-3);
+  font-size: 11.5px;
+  line-height: 16px;
+}
+
+/*
+ * 状态列：一格 8 见方的方块加一个词，靠形状与字分辨，不靠颜色：
+ *   可用 = 实心的墨色方块，字是墨色；需要设置 / 不可用 = 空心方块（1px 线），线与字分别是琥珀与红；
+ *   检测中 = 同一个空心方块，框里多一道 6×3 的带子（占半个框），线与字都是灰；带子在框里一格一格上下推移，停下来就是半满的方块。
+ * 设置窗口里没有圆形，“进行中”不靠转圈：带子总占着半个框，所以不会读成实心的“可用”；框里又总留着一半空，所以不会读成空心的“需要设置 / 不可用”。
+ * 这套配色里 --teal 与 --red 同是朱砂色，所以“可用”不再用 teal（见 harness-info.ts 的 statusTone），否则它与“不可用”只差一个字。
+ * 状态不带框、不带底：框与色底留给标签；比 .chip[data-tone] 多一层 .settings 与 .hcard-toggle，是为了压过 overlays.css 里设置窗口的标签样式。
+ */
+.settings .hcard-toggle > .chip[data-tone] {
+  justify-self: start;
+  gap: 8px;
+  padding: 0 0 1px;
+  background: none;
+  box-shadow: none;
+}
+
+.settings .hcard[data-status="ready"] .hcard-toggle > .chip[data-tone] {
+  color: var(--text);
+}
+
+.settings .hcard[data-status="checking"] .hcard-toggle > .chip[data-tone] {
+  color: var(--text-3);
+}
+
+.status-pip {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  background: currentColor;
+}
+
+.status-pip[data-status="needs_setup"],
+.status-pip[data-status="unavailable"],
+.status-pip[data-status="checking"] {
+  background: none;
+  box-shadow: inset 0 0 0 1px currentColor;
+}
+
+/* 检测中 = 上面那个空心方块（同一圈 1px 线、同一个 8×8）加一道 6×3 的带子：用 background 画，不另起元素；起笔在下半格，也就是静止时的样子——
+   减少动态效果时 base.css 把所有动画压成一次 0.001ms，结束后回到这里写的起笔位置，这一格停在半满的方块上，不动也读得出“进行中”，不必另写一套。
+   只动 background-position（只重绘，不排版）：从下半格（1px 4px）到上半格（1px 1px），每步 1px；steps(4, jump-none) 是四个位置各占 1/4，
+   逐格走让每一帧都落在整像素上，线不发虚。来回（alternate）时两端各连着停两拍、中间两格各一拍，像摆到头停一下，一个来回 2.4s；
+   幅度只有 1px 一格，不像 breathe 那样整点明灭。不旋转、不画弧。 */
+.status-pip[data-status="checking"] {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-size: 6px 3px;
+  background-position: 1px 4px;
+  animation: pip-wait 1.2s steps(4, jump-none) infinite alternate;
+}
+
+@keyframes pip-wait {
+  to {
+    background-position: 1px 1px;
+  }
+}
+
+/* 头部与展开的内容之间一条线。 */
+.hcard-panel {
+  border-top: 1px solid var(--line);
+}
+
+/*
+ * 设置提示：通栏的浅灰块，左缘一条 2px 的状态线（琥珀 = 需要设置，红 = 不可用）。图标落在徽标那一列的正中，文字落在名称那一列的左缘，
+ * 与上面头部的两列对齐。不再整块铺色：两种状态靠左缘的线与图标的颜色区分，文字一律是正文的灰。
+ */
+.hcard-setup {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  column-gap: var(--gutter, 16px);
+  margin: 0;
+  padding: 12px var(--pad, 16px);
+  background: var(--soft);
+  box-shadow: inset 2px 0 0 var(--text-4);
+  font-size: 12.5px;
+  line-height: 20px;
+}
+
+.hcard-setup > svg {
+  justify-self: center;
+  margin-top: 3px;
+}
+
+.hcard-setup[data-status="needs_setup"] {
+  box-shadow: inset 2px 0 0 var(--amber);
+  color: var(--amber);
+}
+
+.hcard-setup[data-status="unavailable"] {
+  box-shadow: inset 2px 0 0 var(--red);
+  color: var(--red);
+}
+
+.hcard-setup p {
+  margin: 0;
+  color: var(--text-2);
+  overflow-wrap: anywhere;
+}
+
+/* 命令：白底、一圈细线的代码槽，32 高；复制按钮 24 见方（overlays.css），贴着右边。 */
+.cmd {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  margin-top: 8px;
+  padding: 4px 4px 4px 12px;
+  background: var(--bg);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+}
+
+.cmd code {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+  color: var(--text);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* 展开后的两个分区（模型、访问权限）通栏排开，与设置提示、分区之间各一条线；分区自己的头与内缩在 overlays.css（.settings .section-*）。 */
+.hcard-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.hcard-setup + .hcard-body,
+.hcard-body > .section + .section {
+  border-top: 1px solid var(--line);
+}
+
+.access-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* 访问权限：名字（定宽 96）｜ 约束的强度标；机制的说明另起一行。左缘与分区标题同在 --pad + 24 的轴上。 */
+.access-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  padding: 8px var(--pad, 16px) 8px calc(var(--pad, 16px) + 24px);
+}
+
+.access-name {
+  flex: none;
+  width: 96px;
+  font-size: 12.5px;
+}
+
+.access-mech {
+  flex: 1 1 100%;
+  color: var(--text-3);
+  font-size: 11.5px;
+  line-height: 18px;
+}

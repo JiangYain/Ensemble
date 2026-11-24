@@ -1,0 +1,279 @@
+/*
+ * “角色”分区（设置窗口，components/settings/ProfilesSection.tsx）。版式沿用设置窗口的体系（overlays.css）：直角、发丝线、实心 / 空心方块，
+ * 以 4px 网格为准；--pad 取自窗口（≤ 600 时收成 12，变量写在 .settings-frame 上，一路继承到这里）。
+ *
+ * 一行 = 状态方块与名称 | 执行端 | 模型 | 推理强度 | 访问权限 | 删除。分区自己的宽度 < 620 时分两层：上层是方块、名称与删除，
+ * 下层是四个字段，每个字段上方带一行小字的名称（宽版里这一行改由表头给出）。是否换层看分区自己的宽度（container，不是视口），不用脚本去量。
+ * DOM 顺序在两种版式下是同一个（名称、四个下拉框、删除），Tab 的顺序因此不随版式变化。
+ *
+ * 没有圆角、渐变、投影（box-shadow 只用来画零模糊的发丝线与内框，与窗口里其他表是同一种画法）：状态靠形状（实心方块＝此刻可用，空心方块＝不可用或还没存，原因写在这一行下面），
+ * 下拉框右边的箭头是两条 1px 的线拼成的方向角；输入框与下拉框聚焦时都是 2px 的朱砂内框（与窗口里的其他输入框一致）。
+ */
+
+.prof {
+  container: prof / inline-size;
+}
+
+/* 表的外框与窗口里其他表（.setting-list）同一条线。 */
+.prof-table {
+  box-shadow: 0 0 0 1px var(--line-strong);
+}
+
+.prof-empty {
+  padding: 16px var(--pad);
+}
+
+.prof-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* 表头只在宽版里有（窄版里每个字段自带小字的名称）。 */
+.prof-cols {
+  display: none;
+}
+
+/* 窄版：第一层是名称与删除，第二层是四个字段（两列两行），有说明时第三层是一句话。行与行之间一条细线。 */
+.prof-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 32px;
+  align-items: center;
+  gap: 12px;
+  padding: 16px var(--pad);
+}
+
+.prof-row + .prof-row {
+  border-top: 1px solid var(--line);
+}
+
+.prof-id {
+  display: flex;
+  align-items: center;
+  grid-column: 1;
+  grid-row: 1;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* 8×8 的方块的画法在 sidebar.css（.status-pip）：这里只定颜色。 */
+.prof-pip {
+  color: var(--text-2);
+}
+
+.prof-pip[data-status="unavailable"],
+.prof-pip[data-status="needs_setup"] {
+  color: var(--text-3);
+}
+
+.prof-fields {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-row: 2;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.prof-field {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.prof-cap {
+  color: var(--text-3);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.prof-del {
+  grid-column: 2;
+  grid-row: 1;
+  width: 32px;
+  height: 32px;
+}
+
+/* 一句话说明（名称的问题 / 不可用的原因 / 草稿怎样才会保存），缩进到名称的文字下面（方块 8 + 间距 8）。 */
+.prof-msg {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  margin: 0;
+  padding-left: 16px;
+  color: var(--text-2);
+  font-size: 12.5px;
+  line-height: 20px;
+}
+
+/* ───────────────────────── 输入框与下拉框 ───────────────────────── */
+
+.prof-name {
+  flex: 1;
+  min-width: 0;
+  height: 32px;
+  padding: 0 8px 2px;
+  background: var(--bg);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 560;
+}
+
+.prof-name::placeholder {
+  color: var(--text-4);
+  font-weight: 400;
+}
+
+.prof-pick {
+  position: relative;
+  display: block;
+  min-width: 0;
+}
+
+.prof-pick select {
+  display: block;
+  width: 100%;
+  height: 32px;
+  padding: 0 28px 2px 8px;
+  background: var(--bg);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+  color: var(--text);
+  font-size: 12.5px;
+  text-overflow: ellipsis;
+  appearance: none;
+  cursor: pointer;
+}
+
+/* 箭头：一个只画了右、下两条边的 6×6 方块，转 45° 就是朝下的方向角；不是图标，没有任何弧线。 */
+.prof-pick::after {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  width: 6px;
+  height: 6px;
+  border-right: 1px solid var(--text-3);
+  border-bottom: 1px solid var(--text-3);
+  transform: translateY(-75%) rotate(45deg);
+  content: "";
+  pointer-events: none;
+}
+
+.prof-name,
+.prof-pick select {
+  transition: box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.prof-name:hover:not(:focus),
+.prof-pick select:hover:not(:disabled):not(:focus) {
+  box-shadow: inset 0 0 0 1px var(--text-4);
+}
+
+/* 名称有问题：线加粗成 2px 的墨色（不靠色相）。写在聚焦的前面，聚焦时仍是朱砂的框。 */
+.prof-name[aria-invalid="true"] {
+  box-shadow: inset 0 0 0 2px var(--text);
+}
+
+.prof-name:focus,
+.prof-pick select:focus {
+  box-shadow: inset 0 0 0 2px var(--teal);
+  outline: none;
+}
+
+.prof-pick select:disabled {
+  background: var(--soft);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--text-4);
+  cursor: default;
+}
+
+.prof-pick:has(select:disabled)::after {
+  opacity: 0.4;
+}
+
+/* ───────────────────────── 底部：添加 ───────────────────────── */
+
+.prof-foot {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.prof-limit {
+  color: var(--text-3);
+  font-size: 12.5px;
+  line-height: 20px;
+}
+
+/* ───────────────────────── 宽版（分区自己的宽度 ≥ 620） ───────────────────────── */
+
+/*
+ * 六列：名称（含方块）、执行端、模型、推理强度、访问权限、删除。最窄的一档恰好放得下：
+ * 104 + 104 + 128 + 72 + 88 + 32 + 五个 8 的列间距 = 568，加上两侧各 --pad（16）= 600 ≤ 620。
+ * 字段的容器（.prof-fields）在这里 display: contents，四个字段直接成为行的格子，与表头同一组列。
+ */
+@container prof (min-width: 620px) {
+  .prof-cols,
+  .prof-row {
+    grid-template-columns: minmax(104px, 1.1fr) minmax(104px, 1fr) minmax(128px, 1.7fr) minmax(72px, 0.7fr) minmax(88px, 0.9fr) 32px;
+    column-gap: 8px;
+  }
+
+  .prof-cols {
+    display: grid;
+    padding: 8px var(--pad);
+    border-bottom: 1px solid var(--line);
+    color: var(--text-3);
+    font-size: 12px;
+    line-height: 16px;
+  }
+
+  /* 名称的表头对齐输入框的左缘：输入框前面有方块（8）与间距（8）。 */
+  .prof-cols > :first-child {
+    padding-left: 16px;
+  }
+
+  .prof-row {
+    row-gap: 8px;
+    padding: 12px var(--pad);
+  }
+
+  .prof-fields {
+    display: contents;
+  }
+
+  .prof-field {
+    display: block;
+  }
+
+  .prof-field[data-field="harness"] {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .prof-field[data-field="model"] {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .prof-field[data-field="effort"] {
+    grid-column: 4;
+    grid-row: 1;
+  }
+
+  .prof-field[data-field="access"] {
+    grid-column: 5;
+    grid-row: 1;
+  }
+
+  .prof-cap {
+    display: none;
+  }
+
+  .prof-del {
+    grid-column: 6;
+  }
+
+  .prof-msg {
+    grid-row: 2;
+  }
+}

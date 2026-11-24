@@ -1,0 +1,103 @@
+/* 会话引用（context 的第五种条目，components/ContextRef.tsx）。
+   沿用 .ctx 的底色与纵向排布（sidebar.css、editorial.css），只重排它里面：头（执行端标记 + 可点的标题 + 一行来历）、
+   取走了什么（.kvs 键值行，与“信息”页同一套）、当时交出去的原文（折叠）。
+   直角、1px 发丝线、4px 网格；状态靠形状与文字（状态方块、“已不在”那一句话）而不靠颜色——本主题里 --teal 与 --red 都是朱砂色。 */
+
+.cref {
+  gap: 12px;
+  padding: 12px;
+}
+
+.cref-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* 执行端标记（16px）与第一行标题（行高也是 16px）同高，不靠偏移来对齐。 */
+.cref-head > img,
+.cref-head > svg {
+  flex: none;
+}
+
+.cref-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.cref-title {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 520;
+  line-height: 16px;
+  overflow-wrap: anywhere;
+  text-decoration: none;
+}
+
+a.cref-title:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* 来历：执行端、模型、交接时的状态、读取时刻。几段之间用间隔号隔开（普通字符，不是圆点）；窄时折行，不省略。 */
+.cref-sub {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 8px;
+  row-gap: 4px;
+  color: var(--text-3);
+  font-size: 11.5px;
+  line-height: 16px;
+}
+
+.cref-sub > * + *::before {
+  content: "·";
+  margin-right: 8px;
+  color: var(--text-4);
+}
+
+.cref-phase .status-dot {
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+/* 上游已经不在：只留文字，用一圈发丝线框出这句说明（形状，不是颜色）。 */
+.cref-gone {
+  margin: 0;
+  padding: 8px 12px;
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+  color: var(--text-2);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.cref-note {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.cref-toggle {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 4px;
+  min-height: 24px;
+  padding: 0;
+  color: var(--text-3);
+  font-size: 12px;
+  line-height: 16px;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.cref-toggle:hover {
+  color: var(--text);
+}
+
+.cref-toggle > svg {
+  flex: none;
+}

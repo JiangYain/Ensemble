@@ -1,0 +1,130 @@
+/* Editorial light system: quiet paper-white space, graphite information and one vermilion accent. */
+@font-face {
+  font-family: "Inter Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("../fonts/inter-latin-wght-normal.woff2") format("woff2-variations");
+}
+@font-face {
+  font-family: "JetBrains Mono Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 800;
+  src: url("../fonts/jetbrains-mono-latin-wght-normal.woff2") format("woff2-variations");
+}
+@font-face {
+  font-family: "Cormorant Garamond";
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url("../fonts/cormorant-garamond-latin-300-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Cormorant Garamond";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/cormorant-garamond-latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Cormorant Garamond";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("../fonts/cormorant-garamond-latin-500-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Cormorant Garamond";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("../fonts/cormorant-garamond-latin-600-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Cormorant Garamond";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/cormorant-garamond-latin-400-italic.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Cormorant Garamond";
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url("../fonts/cormorant-garamond-latin-500-italic.woff2") format("woff2");
+}
+
+:root {
+  color-scheme: light;
+  --bg: #ffffff;
+  --bg-deep: #fafafa;
+  --bg-raise: #ffffff;
+  --card: #ffffff;
+  --card-hover: #fafafa;
+  --card-edge: rgba(17, 17, 17, 0.12);
+  --inset: #ffffff;
+  --inset-deep: #f6f6f6;
+  --track: #ececec;
+  --line: #eeeeee;
+  --line-strong: #dedede;
+  --text: #171717;
+  --text-2: #525252;
+  --text-3: #737373;
+  --text-4: #949494;
+  --teal: #d94632;
+  --teal-strong: #bd3424;
+  --teal-dim: #b73c2b;
+  --teal-bg: rgba(217, 70, 50, 0.07);
+  /* 淡朱砂实底：--teal 在页面底色上的 14%（--teal-bg 的 7% 在白底上只有 1.08:1，作实底太淡）。从 --teal 派生，不是第二种红。 */
+  --accent-soft: color-mix(in srgb, var(--teal) 14%, var(--bg));
+  --seg-active: #d94632;
+  --amber: #765c4d;
+  --amber-bg: rgba(89, 70, 61, 0.07);
+  --red: #c43f2e;
+  --red-bg: rgba(217, 70, 50, 0.07);
+  --blue: #646464;
+  --blue-bg: rgba(17, 17, 17, 0.05);
+  --violet: #686868;
+  --violet-bg: rgba(17, 17, 17, 0.05);
+  --green: #555555;
+  --font: "Inter Variable", "PingFang SC", "Microsoft YaHei UI", "Noto Sans SC", system-ui, sans-serif;
+  --serif: "Cormorant Garamond", "Times New Roman", Georgia, "Songti SC", SimSun, serif;
+  --mono: "JetBrains Mono Variable", ui-monospace, "Cascadia Code", Consolas, monospace;
+  --fs-xs: 11px;
+  --fs-sm: 12px;
+  --fs-md: 13px;
+  --fs-lg: 14.5px;
+  --fs-xl: 17px;
+  --ink: #ffffff;
+  --fill: #171717;
+  --fill-hover: #333333;
+  --soft: rgba(17, 17, 17, 0.035);
+  --soft-hover: rgba(17, 17, 17, 0.07);
+  --soft-press: rgba(17, 17, 17, 0.1);
+  /* 没有圆角体系：全站是直角，不定义任何圆角 token，也不使用 corner-shape。
+     小标记是方块、线端是方头、转动标记是方框里的一道带子；层级靠 1px 发丝线、实色块和 4px 网格建立。
+     守卫在 lib/corner-system.test.ts：出现任何圆角声明、--r-* 变量、corner-shape、圆形几何或圆端线帽，测试就会红。 */
+  --z-topbar: 20;
+  --z-overlay: 100;
+  --z-menu: 300;
+  --z-toast: 350;
+  --z-tip: 400;
+  --shadow-card: 0 1px 3px rgba(17, 17, 17, 0.035);
+  --shadow-pop: 0 16px 48px rgba(17, 17, 17, 0.12), 0 2px 8px rgba(17, 17, 17, 0.04);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 120ms;
+  --dur: 220ms;
+  --dur-slow: 420ms;
+  --topbar-h: 0px;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 1ms;
+    --dur: 1ms;
+    --dur-slow: 1ms;
+  }
+}

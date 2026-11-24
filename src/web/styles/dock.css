@@ -1,0 +1,114 @@
+/* Canvas multi-select ruler bar, subtle status notices, and harness mark tiles.
+   The old floating pill dock has been replaced by the workspace rail + blueprint scale HUD (workspace.css). */
+
+/* 选中两个及以上节点时贴在画布底部的直角对齐标尺条：与右下角图纸比例尺（.canvas-scale）严格像素级等高（32px）且共底线。 */
+.arrange-wrap {
+  position: absolute;
+  z-index: 30;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  left: 0;
+  right: 0;
+  width: max-content;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  row-gap: 8px;
+  max-width: calc(100% - 24px);
+  pointer-events: none;
+}
+
+.arrange {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  height: 32px;
+  max-width: 100%;
+  padding: 0 3px;
+  border: 1px solid #dedede;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 1px 4px rgba(17, 17, 17, 0.04);
+  pointer-events: auto;
+  animation: arrange-in 0.18s var(--ease-out) both;
+}
+@keyframes arrange-in {
+  from { opacity: 0; translate: 0 5px; }
+}
+.arrange-count {
+  padding: 0 8px 0 7px;
+  color: var(--text-2);
+  font-size: 11px;
+  line-height: 1;
+  white-space: nowrap;
+}
+/* 数字用选中框同一个朱红：数量和画布上那圈红框是同一件事。 */
+.arrange-count .num { margin-right: 1px; color: var(--teal); font-weight: 600; }
+.arrange-group { display: flex; align-items: center; gap: 1px; }
+.dock-divider { width: 1px; height: 14px; margin: 0 3px; background: var(--line-strong); flex: none; }
+.arrange .icon-btn { width: 28px; height: 28px; color: var(--text-2); }
+.arrange .icon-btn[aria-disabled="true"] { opacity: 0.35; cursor: default; }
+.arrange .icon-btn[aria-disabled="true"]:hover,
+.arrange .icon-btn[aria-disabled="true"]:active { background: transparent; color: var(--text-2); }
+
+/* 连接异常状态提示：克制单行，不再浮空叠药丸。 */
+.status-notices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.status-notices[data-place="inline"] {
+  margin-bottom: 8px;
+}
+.status-notices[data-place="floating"] {
+  position: absolute;
+  z-index: 30;
+  bottom: max(12px, env(safe-area-inset-bottom));
+  left: 14px;
+  pointer-events: auto;
+}
+.status-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: 1px solid var(--line-strong);
+  background: var(--bg);
+  color: var(--text-2);
+  font-size: 11px;
+  line-height: 1.25;
+}
+.status-note i { width: 6px; height: 6px; background: var(--teal); }
+.status-note[data-conn="offline"] { color: var(--red); border-color: color-mix(in srgb, var(--red) 35%, var(--bg)); }
+
+.harness-tile {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  border: 1px solid #ededed;
+  background: #fff;
+  color: var(--text);
+}
+.harness-tile[data-sim] { border-style: dashed; border-color: #aaa; }
+.harness-mark { display: block; flex: none; object-fit: contain; }
+.harness-mark[data-harness="pi"] { scale: 1.24; }
+.harness-glyph { display: flex; flex: none; align-items: center; color: var(--text); }
+.harness-glyph > * { display: block; flex: none; pointer-events: none; }
+
+@media (max-width: 560px) {
+  .arrange-wrap { bottom: max(12px, env(safe-area-inset-bottom)); }
+  .arrange { padding: 0 3px; }
+  /* 数量文字隐藏后，它后面的分隔线也一并隐藏，免得条的最左边多出一根孤零零的竖线。 */
+  .arrange-count, .arrange-lead { display: none; }
+  .arrange .dock-divider { margin: 0 2px; }
+  .arrange .icon-btn { width: 26px; height: 28px; }
+}
+@media (max-width: 390px) {
+  .arrange .dock-divider { margin: 0 1px; }
+  .arrange .icon-btn { width: 25px; }
+}
+/* 宿主的浏览器侧栏可以很窄：11 个按钮要在 320px 内放下，只能再收紧一档。 */
+@media (max-width: 360px) {
+  .arrange { gap: 0; padding: 0 2px; }
+  .arrange .dock-divider { margin: 0 1px; }
+  .arrange .icon-btn { width: 23px; }
+}

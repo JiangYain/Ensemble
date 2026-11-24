@@ -1,0 +1,280 @@
+/* 聚焦视图：一个被委派的完整 Harness 会话——头部状态卡、任务/信息/概览三栏、时间线与干预输入。
+ * 骨架与失败提示在本文件；时间线、干预输入、侧栏依次在 timeline.css、intervention.css、sidebar.css（层叠顺序依赖 main.tsx 里的引入顺序）。 */
+
+/* ───────────────────────── 骨架 ───────────────────────── */
+
+.focus {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.focus-head {
+  position: relative;
+  flex: none;
+  margin: 14px 16px 0;
+  padding: 10px 14px 16px;
+  background: var(--card);
+  box-shadow: var(--shadow-card), 0 0 0 1px var(--card-edge);
+}
+
+.head-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  margin-bottom: 12px;
+}
+
+.head-origin {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  height: 26px;
+  padding: 0 10px 1px;
+  /* 26px 高的直角标签，与下方的 .chip 同一底色（--soft）；这是它唯一的底色声明。 */
+  background: var(--soft);
+  color: var(--text-2);
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.head-origin > span:not(.head-origin-ref) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.head-origin-ref {
+  color: var(--text-3);
+  font-size: 11px;
+}
+
+.head-main {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.head-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 9px;
+  min-width: 0;
+}
+
+.head-title {
+  margin: 0;
+  overflow: hidden;
+  font-size: 19px;
+  font-weight: 590;
+  line-height: 1.3;
+  letter-spacing: -0.003em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.head-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+}
+
+.head-activity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  margin-top: 16px;
+  color: var(--text-2);
+  font-size: 12.5px;
+  line-height: 1.3;
+}
+
+.head-activity > svg,
+.head-activity > .spinner {
+  flex: none;
+}
+
+.head-activity[data-phase="failed"] {
+  color: var(--red);
+}
+
+.head-activity-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.focus-body {
+  display: grid;
+  flex: 1;
+  gap: 14px;
+  min-height: 0;
+  padding: 14px 16px 16px;
+}
+
+.focus-body--wide {
+  grid-template-columns: minmax(264px, 304px) minmax(0, 1fr) minmax(264px, 316px);
+}
+
+.focus-body--medium {
+  grid-template-columns: minmax(280px, 330px) minmax(0, 1fr);
+}
+
+.focus-body--narrow {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 12px 14px;
+}
+
+.focus-body--narrow > .focus-main,
+.focus-body--narrow > .rail {
+  flex: 1;
+  min-height: 0;
+}
+
+.rail {
+  min-height: 0;
+  padding: 0 4px 12px 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.panel-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.focus-main {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--bg-raise);
+  box-shadow: 0 0 0 1px var(--line);
+}
+
+.focus[data-mode="narrow"] .focus-head {
+  margin: 10px 12px 0;
+  padding-bottom: 14px;
+}
+
+.focus[data-mode="narrow"] .head-top .btn-label,
+.focus[data-mode="medium"] .head-top .btn--ghost .btn-label {
+  display: none;
+}
+
+.focus[data-mode="narrow"] .head-main {
+  gap: 12px;
+}
+
+/* ───────────────────────── 失败 / 失联提示 ───────────────────────── */
+
+/* 左右内边距与阅读列的留白一致（--conv-gutter 的定义与窄面板下的收窄在 timeline.css 开头）。 */
+.error-banner {
+  display: flex;
+  flex: none;
+  gap: 12px;
+  padding: 12px var(--conv-gutter) 13px;
+  border-bottom: 1px solid color-mix(in srgb, var(--red) 24%, transparent);
+  background: var(--red-bg);
+}
+
+.error-banner[data-phase="lost"] {
+  border-bottom-color: color-mix(in srgb, var(--amber) 24%, transparent);
+  background: var(--amber-bg);
+}
+
+.error-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  background: color-mix(in srgb, var(--red) 14%, transparent);
+  color: var(--red);
+}
+
+.error-banner[data-phase="lost"] .error-icon {
+  background: color-mix(in srgb, var(--amber) 14%, transparent);
+  color: var(--amber);
+}
+
+.error-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+}
+
+.error-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+}
+
+.error-title {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 580;
+}
+
+.error-code {
+  color: var(--text-3);
+  font-size: 11px;
+}
+
+.error-message,
+.error-hint {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 12.5px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.error-hint {
+  color: var(--text-3);
+}
+
+.error-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  color: var(--text-3);
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+
+.error-toggle:hover {
+  color: var(--text);
+}
+
+.error-detail {
+  align-self: stretch;
+  max-height: 200px;
+  margin: 6px 0 0;
+  padding: 9px 12px 10px;
+  overflow: auto;
+  background: var(--inset-deep);
+  color: var(--text-2);
+  font-size: 11.5px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

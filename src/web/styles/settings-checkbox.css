@@ -1,0 +1,36 @@
+/* 设置窗口里两处勾选框共用的外观：“允许的模型”每一行的勾选（`.mrow-box`，model-pick.css）与“历史”分区的留存开关（`.retention-box`，archive.css）。
+   两处的框是同一个东西：16 见方、白底、一圈 1px 的内线（没勾 #c2c2c2，悬停 #8c8c8c），勾上是实心墨色块，键盘聚焦是离框 2px 的 2px 朱砂线；这里只写这几件相同的事。
+   各自独有的留在各自的文件：框的底色与对勾色、模型勾下移 1px、对勾的缩放与淡入（model-pick.css），留存开关里对勾的直接显隐（archive.css）。
+   选择器用逗号并列，每一项都是原来的写法，权重一个没动（框 0,1,0；悬停、勾上、聚焦都是 0,3,0）；规则的先后也没动：没勾 → 悬停 → 勾上 → 聚焦。
+   悬停与勾上权重相同，后写的赢，所以鼠标停在已勾上的框上仍是实心墨色：不要把“勾上”挪到“悬停”前面。
+   在 main.tsx 里夹在 sidebar.css 与 model-pick.css 之间：先于用到它的 model-pick.css 与 archive.css，那两个文件在它之上补各自独有的部分。
+   拆分时核对过：overlays.css、limits.css、profiles.css 里没有任何一条规则作用在这两个框上，所以本文件排在它们之前不改变任何结果。 */
+
+.mrow-box,
+.retention-box {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  box-shadow: inset 0 0 0 1px #c2c2c2;
+  transition: background-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.mline:hover .mrow-box,
+.retention-toggle:hover .retention-box {
+  box-shadow: inset 0 0 0 1px #8c8c8c;
+}
+
+.mrow-input:checked + .mrow-box,
+.retention-input:checked + .retention-box {
+  background: var(--fill);
+  box-shadow: inset 0 0 0 1px var(--fill);
+}
+
+/* 聚焦：一圈 2px 的朱砂线，离框 2px（直角、没有外晕）；勾上与没勾上同一种写法。 */
+.mrow-input:focus-visible + .mrow-box,
+.retention-input:focus-visible + .retention-box {
+  outline: 2px solid rgba(217, 70, 50, 0.72);
+  outline-offset: 2px;
+}

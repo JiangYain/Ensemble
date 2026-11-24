@@ -1,0 +1,141 @@
+/*
+ * 并发上限这一行（GeneralSection 里的 ConcurrencyRow）。沿用设置窗口的表格版式（.setting-row：左边名字与说明，右边控件，见 overlays.css），
+ * 这里只补这一行自己的几件事；“限制 / 不限制”的分段控件复用 .settings .setting-control 的直角版式，不在这里重写。
+ * 单独放一个文件（引入顺序紧跟 overlays.css）：设置窗口的主样式文件不为一行设置再长一块，以后同类的设置也各有各的文件。
+ *
+ * 版式只有直角、发丝线与实心块，以 4px 网格为准；没有圆角（含圆头线帽）、阴影与色相：
+ *   - 右列固定 320 宽。第一行是控件（单选 176 + 12 + 数字框 128 = 316，高 32），其后每行 20 高的小字；
+ *   - 左列的名字取 32 的行高，与右列第一行的控件同高，中线对齐；说明与右列的小字都从 36（32 + 4）起，两列的行线对齐；
+ *   - 数字框是一个 128 × 32 的整体：32 的减号格 ｜ 64 的数字 ｜ 32 的加号格，格间 1px 的 --line-strong，外框与单选同一种内缩 1px 的线；
+ *     外框画在最上面一层（::after），悬停的底色盖不住它；数字用等宽字体、等宽数字，居中；
+ *   - 草稿不合法：外框由 1px 加粗到 2px 的墨色（--text），下面一行墨色的字说明。靠粗细与文字表达，不靠色相——--teal 与 --red 同属朱砂色系。
+ * 窗口（.settings，容器）宽度 ≤ 880 时改成上下排：名字与说明在上，控件在下，左缘对齐。880 是并排时说明列仍有 ≥ 224 宽的下限
+ * （880 − 导航 216 − 正文内缩 64 − 行内缩 32 − 列距 24 − 右列 320 = 224）。再窄时右列的控件行自己折行（flex-wrap），不量宽度、不用脚本。
+ */
+
+.setting-row--concurrency {
+  align-items: flex-start;
+}
+
+.setting-row--concurrency .setting-label {
+  line-height: 32px;
+}
+
+.concurrency {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  width: 320px;
+  max-width: 100%;
+}
+
+.concurrency-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.concurrency-field {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  height: 32px;
+  background: var(--bg);
+}
+
+.concurrency-field::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+  pointer-events: none;
+}
+
+.concurrency-field:has(.concurrency-input[aria-invalid="true"])::after {
+  box-shadow: inset 0 0 0 2px var(--text);
+}
+
+.concurrency-step {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  color: var(--text-2);
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+
+.concurrency-step:hover:not(:disabled) {
+  background: var(--soft);
+  color: var(--text);
+}
+
+.concurrency-step:active:not(:disabled) {
+  background: var(--soft-hover);
+}
+
+.concurrency-step:disabled {
+  color: var(--text-4);
+}
+
+/* 聚焦环画在格子里面：格子紧挨着外框，画在外面会被相邻的格子盖掉。 */
+.concurrency-step:focus-visible,
+.concurrency-input:focus-visible {
+  outline-offset: -2px;
+}
+
+.concurrency-input {
+  flex: none;
+  width: 64px;
+  height: 32px;
+  padding: 0 4px 2px;
+  border-right: 1px solid var(--line-strong);
+  border-left: 1px solid var(--line-strong);
+  background: none;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.concurrency-input:disabled {
+  color: var(--text-4);
+}
+
+.concurrency-meta {
+  margin: 0;
+  color: var(--text-3);
+  font-size: 12.5px;
+  line-height: 20px;
+}
+
+.concurrency-meta p {
+  margin: 0;
+}
+
+/* 行内的文字操作（恢复默认）跟着这一行的字号，不另起一档 12px。 */
+.concurrency-meta .link-btn {
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.concurrency-problem {
+  color: var(--text);
+  font-weight: 560;
+}
+
+@container (max-width: 880px) {
+  .setting-row--concurrency {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .setting-row--concurrency .setting-label {
+    line-height: 20px;
+  }
+}

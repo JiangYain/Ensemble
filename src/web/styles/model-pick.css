@@ -1,0 +1,406 @@
+/* 设置窗口里“主 Agent 可选的模型”这一块的全部样式：筛选框、勾选列表（行、品牌标、“默认”标）、推理强度的展开钮与档位多选，最后是每行最右的“默认模型”单选（`.mpick*`）。
+   前面一大段原先在 sidebar.css 的末尾（那个文件因此超过了 1000 行），整块原样搬来，选择器与书写顺序都没动；`.mpick*` 排在它们之后，依赖前面 `.mline` / `.mrow-*` 的行骨架，层叠顺序就是书写顺序。
+   勾选格的框、悬停线、选中填充与聚焦环不在这里，在 settings-checkbox.css（与“历史”分区的留存开关共用）；这里只留模型勾独有的部分。
+   在 main.tsx 里排在 settings-checkbox.css 之后、overlays.css 之前：这块规则一向排在 overlays.css 之前，权重相同时谁后写谁赢，这个先后不能换。 */
+
+/* ───────────────────────── 主 Agent 可选的模型（勾选列表） ───────────────────────── */
+
+.mcfg-section > .section-head {
+  flex-wrap: wrap;
+  row-gap: 0;
+}
+
+.mcfg-section > .section-head > .section-toggle {
+  flex: 1 1 max-content;
+  min-height: 40px;
+  height: auto;
+}
+
+.mcfg-section > .section-head .section-title {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-overflow: clip;
+}
+
+.mcfg-section > .section-head .section-count {
+  flex: none;
+  white-space: nowrap;
+}
+
+.mcfg-section > .section-head > .section-action {
+  flex: none;
+  margin-inline-start: auto;
+}
+
+/* 按钮自带 8px 的内边距，文字右缘比表头的右内缩线再靠里；往外挪 8px，让文字的右缘落在这条线上（下面各行单选格的右缘也在它上面）。 */
+.mcfg-bulk {
+  display: inline-flex;
+  margin-right: -8px;
+}
+
+.mcfg-bulk button {
+  height: 24px;
+  padding: 0 8px 1px;
+  color: var(--text-3);
+  font-size: 12px;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+
+.mcfg-bulk button:hover:not(:disabled) {
+  background: var(--soft);
+  color: var(--text);
+}
+
+.mcfg-bulk button:disabled {
+  opacity: 0.38;
+}
+
+/* 筛选框：32 高，上 4 下 8，左右与各行同一条内缩线；放大镜在左 12 处，文字从 36 起。 */
+.mcfg-filter {
+  margin: 4px var(--pad, 16px) 8px;
+}
+
+.mcfg-filter .input {
+  height: 32px;
+  padding-left: 36px;
+  font-size: 12.5px;
+}
+
+.mcfg-empty {
+  margin: 0;
+  padding: 8px var(--pad, 16px) 12px;
+  font-size: 12.5px;
+}
+
+.mcfg-note {
+  margin: 0;
+  padding: 8px var(--pad, 16px) 12px;
+  color: var(--text-3);
+  font-size: 12px;
+  line-height: 20px;
+}
+
+/* 列表通栏：行的悬停底色铺满整行，复选框、标与名字的轴由 .mline / .mrow 的内缩与列决定。
+   上限 272 = 8.5 行：超过时最后一行只露出一半，能看出还有，不必靠滚动条提示；下面留 8 再接提示。 */
+.mlist {
+  display: flex;
+  flex-direction: column;
+  max-height: 272px;
+  margin: 0 0 8px;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+  overscroll-behavior: contain;
+}
+
+.mitem {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 一行是三列，与卡片头同一组：名称（勾选 + 标 + 名字，1fr）｜ 推理强度的展开钮（--col-status）｜ 默认模型的单选格（16）。
+   两个互相独立的控件——勾选（整块可点）和展开钮——并排放在同一条悬停底色里；名字可以折行，
+   所以控件都贴着第一行的中线（18px 行高、上 6 下 8，整行最少 32px）。 */
+.mline {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--col-status, 112px) 16px;
+  align-items: start;
+  column-gap: var(--gutter, 16px);
+  padding: 0 var(--pad, 16px);
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.mline:hover {
+  background: var(--soft);
+}
+
+/* 勾选格 16 见方，与名字之间 8：没有品牌标的名字落在 --pad + 24，这条轴也是分区标题与推理强度的左缘。 */
+.mrow {
+  position: relative;
+  display: flex;
+  grid-column: 1;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+  padding: 6px 0 8px;
+  color: var(--text);
+  font-size: 12.5px;
+  line-height: 18px;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* 藏在方框后面的原生复选框：原生输入框自带半径，隐形也显式写 0，零圆角守卫才看得见它（见 question.css 同款说明；本文件的 .echip-input、.mpick-input 同理）。 */
+.mrow-input {
+  position: absolute;
+  top: 7px;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  border-radius: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 框本身（16 见方、白底细线）、悬停线、选中填充与聚焦环在 settings-checkbox.css，与“历史”分区的留存开关共用；
+   这里只留模型勾独有的：下移 1px，与第一行文字的中线对齐；底色与对勾色直接写白（留存开关取 --bg / --ink）。 */
+.mrow-box {
+  margin-top: 1px;
+  background: #fff;
+  color: #fff;
+}
+
+/* 对勾：没勾时缩到 0.7 倍并透明，勾上时淡入、放回原大小（留存开关的对勾没有这层过渡，直接显隐）。 */
+.mrow-box svg {
+  opacity: 0;
+  transform: scale(0.7);
+  transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur) var(--ease-out);
+}
+
+.mrow-input:checked + .mrow-box svg {
+  opacity: 1;
+  transform: none;
+}
+
+/* 没勾选的行整体退一档：一眼就能数出“开放了哪几个”。名字是这一行的主角：放不下就自然折行，不省略成“GPT-…”。 */
+.mrow-name {
+  flex: 1;
+  min-width: 0;
+  color: var(--text-3);
+  overflow-wrap: anywhere;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.mrow[data-on] .mrow-name {
+  color: var(--text);
+}
+
+/* 品牌标 14，放进 16 的格子里（左右各 1）；格子的左缘离勾选格 --gutter，名字因此落在 --pad + 40 + --gutter，与上面卡片头的名称同一条轴。 */
+.mrow .model-mark,
+.mrow .model-glyph {
+  margin: 2px 1px 0 calc(var(--gutter, 16px) - 7px);
+  opacity: 0.42;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+
+.mrow[data-on] .model-mark,
+.mrow[data-on] .model-glyph {
+  opacity: 1;
+}
+
+.mrow .chip {
+  margin-top: -1px;
+}
+
+/* “默认”标是列表里最亮的一点颜色，不能让它落在一行没被开放的模型上抢眼。 */
+.mrow:not([data-on]) .chip {
+  opacity: 0.5;
+}
+
+/* 展开推理强度的钮：平时只是一个安静的计数（没动过用灰、被收窄过就深一档，翻列表时一眼能找到那几个）。
+   它在状态列里：按钮自带 8px 的内边距，往左挪 8px，文字的左缘就与上面卡片头的状态字在同一条线上。 */
+.mrow-more {
+  display: inline-flex;
+  grid-column: 2;
+  align-items: center;
+  justify-self: start;
+  gap: 4px;
+  height: 24px;
+  margin: 3px 0 0 -8px;
+  padding: 0 4px 1px 8px;
+  color: var(--text-3);
+  font-size: 11px;
+  line-height: 1;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+
+.mrow-more:hover {
+  background: var(--soft-hover);
+  color: var(--text);
+}
+
+/* 钮贴着行的上沿，聚焦环画在里面，不被列表的滚动区裁掉。 */
+.mrow-more:focus-visible {
+  outline-offset: -2px;
+}
+
+.mrow-more[data-state="limited"] {
+  color: var(--text);
+}
+
+.mrow-more[data-state="empty"] {
+  color: var(--amber);
+}
+
+.mrow-more-chevron {
+  transition: transform var(--dur) var(--ease-out);
+}
+
+.mitem[data-open] .mrow-more-chevron {
+  transform: rotate(180deg);
+}
+
+/* 次级区：紧凑的多选，放不下自动折行；左缘与名字对齐：没有品牌标时是 --pad + 24（勾选格 16 + 间距 8），
+   有品牌标时是 --pad + 40 + --gutter（与名字同一条轴）。 */
+.mefforts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  padding: 0 var(--pad, 16px) 8px calc(var(--pad, 16px) + 24px);
+}
+
+.mlist[data-marked] .mefforts {
+  padding-left: calc(var(--pad, 16px) + 40px + var(--gutter, 16px));
+}
+
+.echip {
+  position: relative;
+  display: inline-flex;
+  cursor: pointer;
+  user-select: none;
+}
+
+.echip[data-last] {
+  cursor: default;
+}
+
+.echip-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border-radius: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 与左边的复选框同一套语言：白底细边是没选，深色实心是选中。 */
+.echip-text {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 8px 1px;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px #c2c2c2;
+  color: var(--text-3);
+  font-size: 11px;
+  line-height: 1;
+  transition: background-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+
+.echip:hover .echip-text {
+  box-shadow: inset 0 0 0 1px #8c8c8c;
+  color: var(--text);
+}
+
+/* 深底上的白字比同字号的深字略轻（400 → 360）。 */
+.echip[data-on] .echip-text {
+  background: var(--fill);
+  box-shadow: inset 0 0 0 1px var(--fill);
+  color: #fff;
+  font-weight: 360;
+}
+
+.echip[data-on]:hover .echip-text {
+  background: var(--fill-hover);
+  box-shadow: inset 0 0 0 1px var(--fill-hover);
+}
+
+/* 聚焦：与勾选格同一种写法——一圈 2px 的朱砂线，离方块 2px，直角、没有外晕；选中与没选中一样。 */
+.echip-input:focus-visible + .echip-text {
+  outline: 2px solid rgba(217, 70, 50, 0.72);
+  outline-offset: 2px;
+}
+
+/* ───────────────────────── 默认模型（单选） ───────────────────────── */
+
+/* “默认模型”的单选，每个已开放的行最右一格（没开放的行留一个同宽的空位，这一列不会错位）。
+   形状与勾选格相反：勾选是深色实心的方块，这里是白底细线的方框、框里一块朱色的小方块；位置也不同：勾选在最左，默认在最右，一眼不会当成同一列。
+   平时就在，只是一圈淡轮廓。两头都有代价：藏到悬停才出现，第一次用的人没处发现这里能指定默认模型；与勾选格同样重，一列几十个框又比勾选格更吵。
+   线色取这个窗口里“框”的那一档 --line-strong（#dedede：执行端表的外框、窗口的骨架线都是它，见 overlays.css 开头的两档线）：对白底 1.35 : 1，
+   比勾选格没勾时的线（#c2c2c2，1.78 : 1）轻一档，比悬停的线（#8c8c8c，3.36 : 1）轻得多；再往浅就是框里的分隔线（--line，#eee，1.16 : 1），
+   那一档只负责“这里有一条线”，不负责“这里有个东西”。没有另造一种灰：层级全部落在窗口已有的几档线上。
+   层级：平时 #dedede < 悬停 #8c8c8c（与勾选格悬停同值）< 选中 朱砂线（--teal，4.31 : 1）加框里的朱色小方块。没开放的行不画框，因为它不能被选。
+   平时这一档低于 3 : 1 是有意的（它是可选的偏好，不是必填项）：介绍句里点名了这个方框，输入框也带完整的 aria-label；悬停与选中都在 3 : 1 以上。
+   格子 16 见方，占 .mline 的最后一列：右缘落在行的右内缩线上，与上面“全部开放 / 全不选”的右缘一条线；框与勾选格同为 16、同一条中线（上沿 7），里面的块 8。
+   点击区比框大（左右各 4、上下撑满整行，::before），不占版面。 */
+.mpick {
+  position: relative;
+  display: grid;
+  grid-column: 3;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  margin-top: 7px;
+  cursor: pointer;
+}
+
+.mpick::before {
+  position: absolute;
+  inset: -7px -4px;
+  content: "";
+}
+
+.mpick[data-void] {
+  pointer-events: none;
+}
+
+.mpick-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border-radius: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mpick-dot {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+  transition: box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.mpick-dot::after {
+  width: 8px;
+  height: 8px;
+  background: var(--teal);
+  content: "";
+  transform: scale(0);
+  transition: transform var(--dur) var(--ease-out);
+}
+
+.mpick:hover .mpick-dot {
+  box-shadow: inset 0 0 0 1px #8c8c8c;
+}
+
+.mpick:active .mpick-dot::after {
+  transform: scale(0.5);
+}
+
+.mpick-input:checked + .mpick-dot {
+  box-shadow: inset 0 0 0 1px var(--teal);
+}
+
+.mpick-input:checked + .mpick-dot::after {
+  transform: none;
+}
+
+/* 聚焦：与勾选格同一种写法——一圈 2px 的朱砂线，离方框 2px，直角、没有外晕。 */
+.mpick-input:focus-visible + .mpick-dot {
+  outline: 2px solid rgba(217, 70, 50, 0.72);
+  outline-offset: 2px;
+}
+
+/* 说明句末尾的“恢复执行端的默认”：与前面的句子隔开一点。 */
+.mcfg-note .link-btn {
+  margin-left: 12px;
+}

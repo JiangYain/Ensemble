@@ -1,0 +1,121 @@
+{
+  "name": "@mosoo/agent-driver",
+  "version": "0.1.0",
+  "private": false,
+  "description": "Runtime-neutral Agent Driver and AI execution bridge for Claude Agent SDK, Codex app-server, ACP, and Pi inside isolated sandboxes.",
+  "homepage": "https://github.com/langgenius/mosoo-agent-driver",
+  "bugs": {
+    "url": "https://github.com/langgenius/mosoo-agent-driver/issues"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/langgenius/mosoo-agent-driver.git"
+  },
+  "bin": {
+    "agent-driver": "./dist/driver.mjs"
+  },
+  "files": [
+    "dist",
+    "src",
+    "!src/runtimes/openai/generated",
+    "assets"
+  ],
+  "type": "module",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./boot": {
+      "types": "./dist/types/boot.d.ts",
+      "default": "./src/boot.ts"
+    },
+    "./runtime": {
+      "types": "./dist/types/runtime.d.ts",
+      "default": "./src/runtime.ts"
+    },
+    "./runtime-events": {
+      "types": "./dist/types/runtime-events.d.ts",
+      "default": "./src/runtime-events.ts"
+    },
+    "./paths": {
+      "types": "./dist/types/paths.d.ts",
+      "default": "./src/paths.ts"
+    },
+    "./events": {
+      "types": "./dist/types/events.d.ts",
+      "default": "./src/events.ts"
+    },
+    "./contract": {
+      "types": "./dist/types/contract/index.d.ts",
+      "default": "./src/contract/index.ts"
+    },
+    "./orpc": {
+      "types": "./dist/types/orpc.d.ts",
+      "default": "./src/orpc.ts"
+    },
+    "./provider-output": {
+      "types": "./dist/types/provider-output.d.ts",
+      "default": "./src/provider-output.ts"
+    },
+    "./cma-http": {
+      "types": "./dist/types/cma-http.d.ts",
+      "default": "./src/cma-http.ts"
+    },
+    "./cma-sdk": {
+      "types": "./dist/types/cma-sdk.d.ts",
+      "default": "./src/cma-sdk.ts"
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "clean": "rm -rf dist node_modules",
+    "fmt": "vp fmt",
+    "lint": "vp lint",
+    "tc": "vp exec tsc",
+    "test": "bun test",
+    "test:coverage": "bun test --coverage",
+    "test:artifact:mcp": "AGENT_DRIVER_LIVE=1 bun test tests/driver-artifact-mcp.test.ts",
+    "test:live": "vp run build && vp run test:live:artifact",
+    "test:live:artifact": "AGENT_DRIVER_LIVE=1 AGENT_DRIVER_LIVE_SUITE=all bun test tests/driver-artifact-live.test.ts tests/driver-artifact-mcp.test.ts",
+    "test:live:anthropic": "vp run build && AGENT_DRIVER_LIVE=1 AGENT_DRIVER_LIVE_SUITE=anthropic bun test tests/driver-artifact-live.test.ts",
+    "test:live:openai": "vp run build && AGENT_DRIVER_LIVE=1 AGENT_DRIVER_LIVE_SUITE=openai bun test tests/driver-artifact-live.test.ts",
+    "test:live:opencode": "vp run build && AGENT_DRIVER_LIVE=1 AGENT_DRIVER_LIVE_SUITE=opencode bun test tests/driver-artifact-live.test.ts",
+    "bench": "bun bench/ttft-bench.ts",
+    "build": "vp run build:types && bun build src/bin/driver.ts --target bun --outfile dist/driver.mjs",
+    "build:types": "vp pack",
+    "build:image": "vp run build && buildah build --http-proxy=false --platform linux/amd64 -t agent-driver:local .",
+    "check:generated": "bun scripts/sync-openai-generated.mjs --check",
+    "test:image:environment": "podman run --pull=never --rm --entrypoint node agent-driver:local /usr/local/libexec/mosoo/environment-package-manager-check.mjs smoke",
+    "check": "vp check && vp run check:generated && vp run tc && vp run test && vp run build && vp run test:artifact:mcp",
+    "prepack": "vp run build"
+  },
+  "dependencies": {
+    "@agentclientprotocol/sdk": "1.4.0",
+    "@anthropic-ai/claude-agent-sdk": "0.3.295",
+    "@anthropic-ai/sdk": "0.123.0",
+    "@modelcontextprotocol/client": "^2.0.0",
+    "@orpc/client": "^1.15.0",
+    "fflate": "^0.8.3",
+    "vestig": "^0.24.1",
+    "zod": "4.5.4"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "1.1.0",
+    "@openai/codex": "0.152.0",
+    "@types/bun": "1.4.0",
+    "@types/node": "^26.3.0",
+    "opencode-ai": "1.18.25",
+    "typescript": "^7.0.2",
+    "vite-plus": "0.3.0"
+  },
+  "engines": {
+    "bun": ">=1.4.0"
+  },
+  "packageManager": "bun@1.4.0"
+}

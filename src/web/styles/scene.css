@@ -1,0 +1,735 @@
+/* Canvas: white space, quiet connection lines and compact, readable session cards. */
+@keyframes node-in {
+  from { opacity: 0; scale: 0.98; }
+  to { opacity: 1; scale: 1; }
+}
+@keyframes node-out {
+  to { opacity: 0; scale: 0.98; }
+}
+@keyframes pipe-flow { to { stroke-dashoffset: calc(var(--period) * -1px); } }
+@keyframes dots-wave {
+  0%, 60%, 100% { opacity: .38; transform: translateY(0); }
+ 30% { opacity: 1; transform: translateY(-1px); }
+}
+@keyframes swap-in {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/*
+ * 工作中的氤氲（.a-aura，说明见“工作中的氤氲”）的四条“腿”：A 团的横、纵，B 团的横、纵。每条只在一根轴上做 from → to 的往返，
+ * 振幅与每程时长写在使用它们的规则里。横向写在 translate、纵向写在 transform：两个属性互不覆盖，同一个伪元素上可以同时跑一条横腿和一条纵腿，
+ * 而且都只改合成层的位移，不触发布局与重绘。B 团的横腿反向（从右往左），两团从相近的相位出发也不会同向同行。
+ */
+@keyframes aura-a-x { from { translate: -60px 0; } to { translate: 60px 0; } }
+@keyframes aura-a-y { from { transform: translateY(-14px); } to { transform: translateY(14px); } }
+@keyframes aura-b-x { from { translate: 66px 0; } to { translate: -66px 0; } }
+@keyframes aura-b-y { from { transform: translateY(-20px); } to { transform: translateY(20px); } }
+
+/* --scene-top / --scene-side：画布四周的版心（标题“Ensemble”的上、左边距）。浮在画布上的东西（边缘提示）对齐到同一条线；窄屏见文件末尾的 @media。 */
+.scene {
+  --scene-top: 32px;
+  --scene-side: 36px;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #fff;
+  cursor: default;
+  touch-action: none;
+  user-select: none;
+}
+.scene[data-tool="pan"] { cursor: grab; }
+.scene[data-tool="select"], .scene[data-selecting] { cursor: crosshair; }
+.scene[data-panning], .scene[data-moving] { cursor: grabbing; }
+.scene-selection {
+  position: absolute;
+  z-index: 6;
+  border: 1px solid var(--teal);
+  background: rgba(217, 70, 50, .07);
+  pointer-events: none;
+}
+.scene-world, .scene-plates {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+}
+.scene-world { transform-origin: 0 0; will-change: transform; }
+
+.canvas-meta {
+  position: absolute;
+  z-index: 2;
+  top: var(--scene-top);
+  left: var(--scene-side);
+  color: var(--text);
+}
+.canvas-meta h1 {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 28px;
+  font-weight: 600;
+  font-style: italic;
+  line-height: 1.15;
+  letter-spacing: -.02em;
+}
+.pipes { position: absolute; top: 0; left: 0; overflow: visible; pointer-events: none; }
+/*
+ * 管壁（静止的连线）只有这一套笔法：#c6c6c6、宽 1.3、不透明，对白底约 1.71 : 1。来源 → 会话、会话 → 会话、Git → Folder → 来源的归属线一视同仁，
+ * 不看起点是谁，也不看画布有没有排成多列网格。
+ * 曾经在多列网格里把来源 → 根会话的静止线收成近乎不可见的细线（#e8e8e8 / 0.85 / 34%，约 1.07 : 1），为的是几十个根会话从一处扇出时不糊成一团；
+ * 可看不清本身就是坏的，而且两类线应当一致，所以取消。同色同宽、不透明的线重叠只是并成一条，颜色不会叠深；
+ * 扇出里谁压在谁上面交给层叠顺序（pipes.ts 的 pipePriority 定优先级、connections.ts 的 restack 照它排：越活跃越靠上），不靠把哪一类线削弱。
+ * 运行中的线只换颜色并带虚线（下面一条），宽度不变；失败、启动中、排队中的区别在点格（.pipe-fine）上，管壁与静止的一样。
+ * 线在 .scene-world 的缩放里，随画布一起缩，缩小后会更细；这里没有做线宽补偿（要补偿，得由引擎把缩放写成变量）。
+ */
+.pipe-tube { stroke: #c6c6c6; stroke-width: 1.3; stroke-linecap: square; stroke-linejoin: miter; }
+.pipe-tube[data-phase="running"] { stroke: #aaa; stroke-dasharray: 5 5; }
+/*
+ * 流动的点是长度几乎为 0 的虚线段（dasharray 的 .01），方头线帽把它画成与线宽等边的小方块——不是圆点。
+ * 方块的边跟着路径的切线转（曲线斜着走的那一段是斜的）；用方头而不是平头（butt），是因为平头只会把这 0.01 的一段画成一道看不见的细线。
+ */
+.pipe-fine, .pipe-packet {
+  stroke: var(--flow);
+  stroke-linecap: square;
+  opacity: 0;
+  transition: opacity .4s var(--ease-out);
+}
+.pipe-fine { stroke-width: 1; stroke-dasharray: .01 5.5; }
+.pipe-packet { stroke-dasharray: .01 calc(var(--period) * 1px - .01px); animation: pipe-flow var(--dur) var(--phase, 0s) linear infinite paused; }
+.pipe-packet.head { stroke-width: 3; }
+.pipe-packet.tail { stroke-width: 1.7; animation-delay: calc(var(--phase, 0s) + var(--lag, 0s)); }
+.pipe-fine[data-phase="running"] { opacity: .38; }
+.pipe-packet[data-phase="running"] { opacity: 1; animation-play-state: running; }
+.pipe-fine[data-phase="starting"], .pipe-fine[data-phase="queued"] { stroke: #b7b7b7; opacity: .5; }
+.pipe-fine[data-phase="failed"] { stroke: var(--red); opacity: .7; }
+
+.node {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  border: 1px solid #dedede;
+  background: #fff;
+  color: var(--text);
+  cursor: default;
+  touch-action: none;
+  will-change: translate;
+  transition: border-color .18s var(--ease-out), box-shadow .18s var(--ease-out);
+}
+.node:hover, .node[data-menu-open], .node:has(:focus-visible) {
+  border-color: #a7a7a7;
+  box-shadow: 0 4px 14px rgba(17, 17, 17, .045);
+}
+.node[data-selected] {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 1px rgba(217, 70, 50, .28);
+}
+.node[data-dragging] {
+  z-index: 4;
+  cursor: grabbing;
+  border-color: var(--teal);
+  box-shadow: 0 10px 28px rgba(17, 17, 17, .09);
+}
+.node[data-fresh] { animation: node-in .4s var(--ease-out) both; }
+/*
+ * 离场：“只看工作中”下，一个会话不再被需要（完成、失败……）时先淡出，淡出结束布局才合拢（时序见 lib/useWorkView）。
+ * 是 node-in 的反向，同一种缩放；离开比出现更不该占用注意力，所以用 var(--dur)，比出现短。
+ * 用 animation 而不是 transition：长出来的节点带着 node-in 的 both 填充，会把 opacity 一直钉在 1，只有写在它后面的 animation 压得过。
+ * 淡出中的卡片不接收指针；正被操作的卡片根本不会进入这个状态（见 isOperated）。
+ */
+.node[data-leaving] { animation: node-out var(--dur) var(--ease-out) both; pointer-events: none; }
+.node:focus-visible { outline: 2px solid rgba(217, 70, 50, .65); outline-offset: 3px; }
+.node button, .node a { cursor: pointer; }
+.scene[data-tool="pan"] .node, .scene[data-tool="pan"] .node a { cursor: grab; }
+.scene[data-tool="select"] .node, .scene[data-tool="select"] .node a,
+.scene[data-selecting] .node, .scene[data-selecting] .node a { cursor: crosshair; }
+.scene[data-panning] .node, .scene[data-panning] .node a,
+.scene[data-moving] .node, .scene[data-moving] .node a { cursor: grabbing; }
+
+/* 会话卡与来源卡、Git 卡同高（112）：同一行里三种卡片的上下边缘对齐，管线始终水平落在同一条中线上。 */
+.agent { width: 248px; height: 112px; }
+/*
+ * 会话卡片三级视觉权重：
+ * - 第一级（运行中 / 启动中 / 排队中 / 有值得留意）：纯白底、清晰深边，动作行对比度提高；强调的笔法分两种——
+ *   工作中（运行 / 启动 / 排队）是整张卡里一层极淡的朱砂氤氲：运行中缓慢流动，启动中 / 排队中停在一帧，没有色条（见下面的“工作中的氤氲”）；
+ *   有值得留意是左侧 2px 琥珀线，画在 background-image 上，悬停 / 选中 / 拖动等状态下都在（见下面的“值得留意的琥珀线”）；
+ *   失败 / 丢失是同样粗细的内嵌红线，仍画在 box-shadow 上，这些状态会把它换成各自的投影与选中环；
+ * - 第二级（待命 ready）：标准纯白底与默认灰边，保持可继续交代的清晰感；
+ * - 第三级（已完成 / 已取消 / 已关闭）：纸面微沉、边线柔和、正文退半档对比度（悬停/选中/聚焦瞬间复原），不再和进行中的任务抢眼睛。
+ */
+.node.agent[data-phase="running"],
+.node.agent[data-phase="starting"],
+.node.agent[data-phase="queued"] {
+  border-color: #c8c8c8;
+}
+/*
+ * 工作中的氤氲（取代旧的 2px 朱砂色条，再取代“自左缘弥散开的一层静态朱砂”）：整张卡里两团极淡的朱砂，缓慢漂移、聚拢又散开——没有清晰的线、块或色边，边界是“消失”而不是“停止”。
+ * 它是节点的一个子元素 .a-aura（AgentNode 渲染的第一个子元素，aria-hidden），两团各是它的一个伪元素；节点自己的背景、边框与 background-image 都不碰。
+ * · 路线：伪元素 + translate / transform 关键帧。每一团是独立的合成层，漂移是合成层的位移，不触发布局与重绘；但不是零开销、主线程也不是空的：
+ *   验证者在无头 Chrome 里实测，50 张运行中的卡让主线程每帧多约 0.8ms、渲染进程 CPU 约多 11.5 个百分点（真机没测）。用户已决定不给同时流动的氤氲设上限。
+ *   不去动背景渐变：背景要动只能逐帧重绘（@property 动圆心，推断每一帧都在主线程栅格化整张卡，二十张卡就是二十份，没有实测）；也不用 filter / backdrop-filter / mix-blend-mode，没有“圆 + 模糊”。
+ *   不挂在 .node 上：.node[data-fresh] / [data-leaving] 的 animation 就写在节点自己身上，同一元素上后写的 animation 声明会整条盖掉前面的。
+ *   也不用节点自己的伪元素：落点光晕（EdgeHints）已占了节点的 ::after，端口与归属线的旧伪元素写法有测试守着不许回来。
+ * · 层叠：z-index: -1，在 .node 自己的层叠上下文里画在背景之上、一切内容之下——文字、头部分隔线、端口方点（中心压在节点外缘；.a-aura 是它们的兄弟而不是祖先，不会把它们裁掉）、选中环都在它上面。
+ *   悬停 / 选中 / 拖动 / 菜单打开 / 键盘聚焦只改节点的边框、投影与底色，氤氲照常在。pointer-events: none；overflow: hidden 把它裁在内边距盒里（边框不被染），是直角的矩形裁剪，不需要遮罩层。
+ * · 两团，closest-side 的椭圆渐变，按余弦缓动分 9 档（峰值的 1 / .962 / .854 / .691 / .5 / .309 / .146 / .038 / 0 倍，落在 0 / 12.5 / … / 100%），首尾斜率为零：峰顶是圆的，尾巴软到看不出边。
+ *   A 团大：半径 130 × 90，峰值 2.9%，横向 ±60px、每程 11s，纵向 ±14px、每程 17s。B 团小：半径 120 × 86，峰值 1.85%，横向 ±66px（与 A 反向）、每程 13s，纵向 ±20px、每程 19s。
+ *   每程是 from → to 的一趟，alternate 往返，所以 A / B 两团的横向来回分别是 22s / 26s、纵向来回 34s / 38s，都在 10s 以上；四个周期 11 / 17 / 13 / 19 都是质数，合起来约 25.7 小时才重复，看上去不重复。
+ *   缓动是 cubic-bezier(.37, 0, .63, 1)（正弦式缓入缓出），两端速度为零，不是匀速扫过的光带；横向最大约 17px/s、纵向不到 5px/s：是“漂”，不是“扫”。
+ *   两团的中心都定在卡片正中（left / top 取 calc(50% ± 半径)，紧凑一档的 208 宽卡自动居中），漂移范围合起来覆盖整张卡。按这组参数模拟 2 小时、每 3s 一帧：
+ *   重心横坐标在 69–176 之间走（内边距盒宽 246），左缘 40px 内的平均浓度 0–2.5%（有时没有）、右三分之一 0–3.0%（有时有）；整卡平均 1.5–1.7%，起伏 15%，
+ *   那是两团各自漂出卡边造成的、几十秒尺度上的缓变，不是整张卡一起变亮变暗（没有整卡呼吸；卡上唯一的呼吸仍是 .a-run）。
+ * · 浓度只用 --teal，靠 color-mix 取透明度。两团核心重合的瞬间是最坏情形：1 − (1 − 2.9%)(1 − 1.85%) = 4.70%（白底上约 #fdf6f5），远低于 7% 的上限——
+ *   压住它的是文字对比度：旧版注释写的三个下限（标题 16.7、模型名 4.7、排队中动作行 3.28）对应的 α 约 5.3% / 5.0% / 4.84%，取最紧的，任何位置、任何时刻的叠加都不能超过 4.84%。
+ *   最坏叠加 4.70% 下重算（括号里是白底）：标题 #171717 16.84（17.93）、头部模型名 #6f6f6f 4.72（5.02）、排队中动作行 #898989 3.29（3.50）、运行中动作行 #525252 7.34（7.81）、状态文字 #858585 3.47（3.69），逐项不低于旧值。
+ *   想更浓：两团峰值各加约 1 个点就到 7%（4.2% + 2.9% = 6.98%），代价是排队中动作行 3.19、模型名 4.58，低于旧值。
+ * · 谁在流：只有运行中。两团的动画一直挂着（animation-play-state: paused），只有 data-phase="running" 把它放开。
+ *   启动中 / 排队中（不带“值得留意”）是同一团氤氲停在一帧：动画暂停在这张卡自己的相位上，没有流动；变成运行中时从这一帧接着走，不跳；运行结束（完成、失败……）时一边暂停、一边淡出，不是“啪”地消失。
+ *   启动中 / 排队中带“值得留意”时不画氤氲，只留下面的琥珀线；运行中带“值得留意”只有氤氲（琥珀线本来就不作用在 running 上）。失败 / 丢失 / 已完成 / 已取消 / 已关闭没有氤氲，与以前一样。
+ *   显隐是 opacity + visibility 的过渡，时长取 --dur 的三倍（减弱动效下 --dur 是 1ms，也就瞬间完成：这是项目里已有的机制）；不显示时 visibility: hidden，伪元素不再绘制，合成层随之回收。
+ * · 每张卡的相位：四条腿的起始相位取自会话标识的哈希（lib/aura.ts），写成 .a-aura 行内的变量 --aura-ax / -ay / -bx / -by（0 到 1 的数）；这里把它乘上一整个往返的时长、写成负的 animation-delay，
+ *   动画一出生就已走到那一帧。同一个会话每次渲染都是同一帧，不同会话各在各的位置；不是 Math.random，也不依赖状态。
+ * · 减弱动效：base.css 在 prefers-reduced-motion 下把所有动画的时长压到 0.001ms、次数压到 1 次，这里不再另写一套——两团的动画不设 animation-fill-mode（保持默认的 none），
+ *   压缩后它在出生的瞬间就已走完、不再作用于元素，伪元素回到未动画的底值，也就是 translate 上写的静止帧：A 团中心偏左 30px、B 团偏右 44px，叠加峰值约 3.8%、整卡平均约 1.7%，是安静的一片。
+ *   所以别给这两个伪元素加 animation-fill-mode: forwards / both / backwards。
+ * · 性能：纹理内存与像素数是估算，没有实测：每张工作中的卡两块合成层，最大 260×180 与 240×172（1 倍下约 0.19MB + 0.17MB，160% 缩放下约 0.48MB + 0.42MB），二十张卡约 7MB（160% 下约 18MB）纹理；
+ *   每帧在合成线程更新两张变换矩阵，由 GPU 绘出被内边距盒裁剪后的部分（160% 缩放、二十张卡约 280 万像素）；只有缩放档位变化时才重新栅格化。主线程与 CPU 的开销以上面“路线”一条里的实测为准（无头 Chrome、50 张卡），不是“不参与”。
+ */
+.a-aura {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  contain: strict;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity calc(var(--dur) * 3) var(--ease-out), visibility 0s linear calc(var(--dur) * 3);
+}
+.node.agent[data-phase="running"] .a-aura,
+.node.agent[data-phase="starting"]:not([data-attention]) .a-aura,
+.node.agent[data-phase="queued"]:not([data-attention]) .a-aura {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+.a-aura::before,
+.a-aura::after {
+  content: "";
+  position: absolute;
+  animation-timing-function: cubic-bezier(.37, 0, .63, 1);
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+  animation-play-state: paused;
+}
+.a-aura::before {
+  left: calc(50% - 130px);
+  top: calc(50% - 90px);
+  width: 260px;
+  height: 180px;
+  background: radial-gradient(
+    ellipse closest-side at 50% 50%,
+    color-mix(in srgb, var(--teal) 2.9%, transparent),
+    color-mix(in srgb, var(--teal) 2.79%, transparent) 12.5%,
+    color-mix(in srgb, var(--teal) 2.48%, transparent) 25%,
+    color-mix(in srgb, var(--teal) 2%, transparent) 37.5%,
+    color-mix(in srgb, var(--teal) 1.45%, transparent) 50%,
+    color-mix(in srgb, var(--teal) 0.9%, transparent) 62.5%,
+    color-mix(in srgb, var(--teal) 0.42%, transparent) 75%,
+    color-mix(in srgb, var(--teal) 0.11%, transparent) 87.5%,
+    transparent
+  );
+  translate: -30px 0;
+  animation-name: aura-a-x, aura-a-y;
+  animation-duration: 11s, 17s;
+  animation-delay: calc(var(--aura-ax, 0) * -22s), calc(var(--aura-ay, 0) * -34s);
+}
+.a-aura::after {
+  left: calc(50% - 120px);
+  top: calc(50% - 86px);
+  width: 240px;
+  height: 172px;
+  background: radial-gradient(
+    ellipse closest-side at 50% 50%,
+    color-mix(in srgb, var(--teal) 1.85%, transparent),
+    color-mix(in srgb, var(--teal) 1.78%, transparent) 12.5%,
+    color-mix(in srgb, var(--teal) 1.58%, transparent) 25%,
+    color-mix(in srgb, var(--teal) 1.28%, transparent) 37.5%,
+    color-mix(in srgb, var(--teal) 0.93%, transparent) 50%,
+    color-mix(in srgb, var(--teal) 0.57%, transparent) 62.5%,
+    color-mix(in srgb, var(--teal) 0.27%, transparent) 75%,
+    color-mix(in srgb, var(--teal) 0.07%, transparent) 87.5%,
+    transparent
+  );
+  translate: 44px 0;
+  animation-name: aura-b-x, aura-b-y;
+  animation-duration: 13s, 19s;
+  animation-delay: calc(var(--aura-bx, 0) * -26s), calc(var(--aura-by, 0) * -38s);
+}
+.node.agent[data-phase="running"] .a-aura::before,
+.node.agent[data-phase="running"] .a-aura::after {
+  animation-play-state: running;
+}
+.node.agent[data-phase="running"] .a-sub,
+.node.agent[data-phase="starting"] .a-sub {
+  color: var(--text-2);
+}
+.node.agent[data-phase="failed"],
+.node.agent[data-phase="lost"] {
+  background: #fffdfd;
+  box-shadow: inset 2px 0 0 var(--red);
+}
+.node.agent[data-phase="done"],
+.node.agent[data-phase="cancelled"],
+.node.agent[data-phase="stopped"] {
+  border-color: #e7e7e7;
+  background: #fbfbfb;
+}
+.node.agent[data-phase="done"] .a-head,
+.node.agent[data-phase="done"] .a-inset,
+.node.agent[data-phase="cancelled"] .a-head,
+.node.agent[data-phase="cancelled"] .a-inset,
+.node.agent[data-phase="stopped"] .a-head,
+.node.agent[data-phase="stopped"] .a-inset {
+  opacity: 0.78;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+/*
+ * 值得留意的琥珀线（data-attention，且不在运行中）：左缘一条 2px 的琥珀线，边框略带暖色。
+ * · 线画在 background-image 上——一条 2px 宽、与内边距盒等高、贴着它左缘的纯色渐变，位置与以前的 `inset 2px 0 0` 内嵌阴影重合——而不是 box-shadow 上：
+ *   悬停 / 菜单打开 / 键盘聚焦、选中、拖动各自用一整条 box-shadow（浅投影、选中外圈、深投影）表达，后写的声明会整条盖掉前面的，线若也在 box-shadow 里，这些状态一来它就没了。
+ *   这些状态只写 background-color（见下面那段注释），不碰 background-image，所以线在每个状态下都在；
+ *   也就不必像 `.node.origin[data-collapsed]` 的叠层那样，在每个状态的 box-shadow 里把它再带一遍——那要把各状态的阴影数值抄几份，漏掉一个状态，线就在那个状态里丢一次。
+ * · 这个槽位现在只有琥珀线在用：工作中的氤氲搬到了节点的子元素 .a-aura 里（见上面的“工作中的氤氲”），不再占 background-image。两者仍然互斥——
+ *   氤氲只给运行中、以及没有“值得留意”的启动中 / 排队中（.a-aura 显示条件里的 :not([data-attention])），线只给有“值得留意”且不在运行中的；改其中一处的条件时看一眼另一处。
+ *   线所在的 background-image 仍不能被 background 简写重置，见下面“悬停 / 选中 / 拖动”那一段。
+ * · 权重必须压在交互态之下：.agent[data-attention]:not([data-phase="running"]) 是 (0,3,0)，与 .node.agent:hover / [data-selected] / [data-dragging] 同一档，
+ *   它们写在后面，同档后写的赢，悬停等状态的边框与投影才轮得到。写成 .node.agent[data-attention]:not(…) 就是 (0,4,0)，会把它们的 border-color 与 box-shadow 全压掉（这条规则以前正是这样写的）。
+ *   所以别再给这条选择器添类名或属性。
+ * · 写在失败 / 丢失与已完成这些状态装饰之后：同档后写的赢，所以边框与线仍盖过它们；box-shadow: none 抹掉失败 / 丢失的红线（两者同时出现时以前也是琥珀盖过红线），同一处只留一条线。
+ * 代价：线随 data-attention 出现、消失时没有 box-shadow 那 .18s 的过渡（background-image 不能过渡）。
+ */
+.agent[data-attention]:not([data-phase="running"]) {
+  border-color: #d6ccc5;
+  box-shadow: none;
+  background-image: linear-gradient(var(--amber), var(--amber));
+  background-repeat: no-repeat;
+  background-size: 2px 100%;
+}
+/*
+ * 悬停 / 菜单打开 / 键盘聚焦、选中、拖动只把底色复原成纯白（纸面微沉、淡红底的卡片在这些状态下回到白色），
+ * 所以写 background-color，不写 background 简写：简写会连带重置 background-image，值得留意的琥珀线就会在这些状态下被抹掉（工作中的氤氲在 .a-aura 里，与节点自己的背景无关，这些状态下它照常在）。
+ */
+.node.agent:hover,
+.node.agent[data-menu-open],
+.node.agent:has(:focus-visible) {
+  border-color: #a7a7a7;
+  background-color: #fff;
+  box-shadow: 0 4px 14px rgba(17, 17, 17, .045);
+}
+.node.agent:hover .a-head,
+.node.agent:hover .a-inset,
+.node.agent[data-selected] .a-head,
+.node.agent[data-selected] .a-inset,
+.node.agent[data-menu-open] .a-head,
+.node.agent[data-menu-open] .a-inset,
+.node.agent:has(:focus-visible) .a-head,
+.node.agent:has(:focus-visible) .a-inset {
+  opacity: 1;
+}
+.node.agent[data-selected] {
+  border-color: var(--teal);
+  background-color: #fff;
+  box-shadow: 0 0 0 1px rgba(217, 70, 50, .28);
+}
+.node.agent[data-dragging] {
+  border-color: var(--teal);
+  background-color: #fff;
+  box-shadow: 0 10px 28px rgba(17, 17, 17, .09);
+}
+/*
+ * 端口方点：连接层（connections.ts，方点本身见 ports.ts）在每个节点里放四个 `.node-port`，连线接在节点的哪一边，那一边的落点上才点亮（data-on）；
+ * 没有连线接着的边没有方点。落点（--port-x / --port-y）是相对节点左上角的坐标，与连线端点取自同一组数，所以线端总是落在方点的中心上。
+ * 方点的中心压在节点外缘：定位的参照是内边距盒，比外缘缩进一条 1px 的边框，而方点是 6 见方（含 1px 的边），半边是 3px，所以 left / top 要减去 4px。
+ * 边长取偶数：中心落在整数坐标上时，四条边正好压在整像素上，不发虚。
+ * 颜色跟着接在这里的连线里最活跃的那条：运行中是 teal、失败是 red，其余（含静态的归属连线）是灰。
+ * 点亮的方点保留指针事件（和以前的伪元素一样，方点露在外面的那半也算节点的一部分）；熄灭的不拦。
+ */
+.node-port {
+  position: absolute;
+  z-index: 1;
+  left: calc(var(--port-x, 0px) - 4px);
+  top: calc(var(--port-y, 0px) - 4px);
+  width: 6px;
+  height: 6px;
+  border: 1px solid #bcbcbc;
+  background: #fff;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s var(--ease-out), border-color .18s var(--ease-out), background-color .18s var(--ease-out);
+}
+.node-port[data-on] { opacity: 1; pointer-events: auto; }
+.node-port[data-phase="running"] { border-color: var(--teal); background: var(--teal); }
+.node-port[data-phase="failed"] { border-color: var(--red); background: var(--red); }
+
+.a-head {
+  position: absolute;
+  inset: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 42px;
+  padding: 0 10px 0 14px;
+  border-bottom: 1px solid #f0f0f0;
+  color: var(--text-2);
+}
+/*
+ * 头部左端的图标格（来源、Git、Folder 卡的 `.o-head` 与会话卡的 `.a-head` 通用）：13×13，与正文的 13px 图标同宽，起于 x=14，图标在格内居中——
+ * 头部图标与正文图标共用一条中心线（x=20.5）。用 flex 居中：比格子大的图标（控制台 / 终端的线性图标 14.4）
+ * 向两侧等量溢出，中心线不动；grid 的 place-items 在溢出时会贴着起点，把图标推歪。
+ * 会话卡头部写的是执行端：图标格与名字（`.o-label`）和来源卡头部是同一套类，所以 Cursor 发起的 Main Agent 与 Cursor 执行的会话用的是同一枚 Cursor 标。
+ */
+.a-mark { display: flex; flex: none; align-items: center; justify-content: center; width: 13px; height: 13px; color: #333; }
+.a-mark > * { flex: none; }
+.a-mark img { max-width: 100%; max-height: 100%; }
+/*
+ * 推理档位：紧跟在模型名后的次级信息（会话卡头部的 .a-model 里；列表视图的行里也用它），写法与聚焦页头部一致——只写执行端给出的英文短值（max / xhigh / high），
+ * 不随界面语言翻译。比模型名再收一档（10px / 500，浅底小方块），模型名仍是主信息；它自己不收缩（空间不够先省略模型名），
+ * 没有档位时整个元素不渲染，不占位。高 14，与同一块里的模型名（.a-model-name 也是 14）等高，所以这一块不会因为有没有档位而高低不一。
+ */
+.a-effort {
+  flex: none;
+  padding: 0 4px;
+  background: var(--soft);
+  color: var(--text-3);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 14px;
+  white-space: nowrap;
+}
+/*
+ * 模型家族标：单色矢量，遮罩铺上文字色（有官方品牌色的由 marks/brand.css 覆盖）。这里的基础规则是 12–13px 的小标，
+ * 右边距 -1 补满 13 的图标格，用在设置窗口“执行端”分区的模型列表（settings/ModelAccess）里；
+ * 会话卡正文里的 24px 头像画在 `.model-slot` 里，由 ModelSlot 按各家族标的光学大小摆放（见 ModelMark.tsx）。
+ */
+.model-mark { display: block; flex: none; margin-right: -1px; background: #393939; -webkit-mask: var(--mark) center / contain no-repeat; mask: var(--mark) center / contain no-repeat; }
+/* 没有家族标时（认不出的模型、模拟执行）占同一格的中性线性图标：浅一档墨色，说明“这里没有品牌标”，而不是一枚别家的标。 */
+.model-glyph { display: block; flex: none; margin-right: -1px; color: #a3a3a3; }
+/* 头像格：只是一个不画出来的方格，图形（可以比格子大，如 Kimi 的图片框）由 ModelSlot 平移后落进去；竖向由 flex 居中，横向从格子左缘起。 */
+.model-slot { display: flex; flex: none; align-items: center; }
+.model-slot > * { flex: none; }
+.a-model { flex: 0 1 auto; min-width: 0; overflow: hidden; color: #929292; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.a-model::before { content: "/"; margin-right: 7px; color: #c7c7c7; }
+/*
+ * 会话卡头部里的模型与档位：.a-model 在 .a-head 里是一个整体（名字 .a-model-name + 可选的档位徽标 .a-effort）。
+ * 与来源卡、Git 卡头部同一个类、同一个位置（执行端名之后），头部因此是一个家族；下面三处是会话卡头部自己的取舍：
+ * · 没有“/”：头部扣掉图标格、执行端名、标记与菜单后只剩一百二三十 px。常见的“Cursor  Claude Sonnet 5.5  xhigh”，带“/”要 136，
+ *   连把右边的 gap 让回来（见 .a-room）之后的 133 也放不下，名字会被省成“Claude Sonn…”；不带“/”只要 126，还剩 7。
+ *   区分靠字而不靠符号：执行端名 11px / 600 / #393939，模型 10px / 常规 / #6f6f6f，一眼分得开，间距仍是头部统一的 7。
+ *   想与来源卡写得一样，删掉下一行 ::before 即可，代价是上面这类组合放不下全名。
+ * · 墨色 #6f6f6f 而不是 #929292：来源卡里的宿主名是附注，这里是用户要读的信息——它以前在正文里就是 #6f6f6f（对比度 5.0），#929292 只有 3.1。
+ * · 名字先省略（.a-model-name），档位徽标不收缩（.a-effort）：保住“用的是哪一档”这一问。
+ */
+.a-head .a-model { display: flex; align-items: center; gap: 5px; color: #6f6f6f; }
+.a-head .a-model::before { content: none; }
+.a-model-name { flex: 0 1 auto; min-width: 0; overflow: hidden; line-height: 14px; text-overflow: ellipsis; white-space: nowrap; }
+/*
+ * .a-room：头部里执行端名与右端标记之间的那块弹性空白，.a-model 住在里面。它同时是容器查询的容器（inline-size），
+ * 量的是“这一张卡的头部里真正剩下的宽度”——执行端名多长（Pi 约 10px，Claude Code 约 67px）、有几枚标记、卡片是 248 还是 208 宽，都已经算在里面，
+ * 所以阈值写一个数就对所有情形成立，不用 JS 量宽度。
+ * 右边没有标记、紧挨着菜单时，把右边那个 gap（7）让回来：菜单按钮 26 宽，图形（三个点）13 宽居中，两侧各有约 6.5 的空白，
+ * 让回之后名字的墨迹到“···”的墨迹仍有约 6.5，视觉间距与别处的 7 一致。有标记时不让：标记与名字之间需要完整的 7。
+ */
+.a-room { display: flex; flex: 1 1 0; align-items: center; min-width: 0; container: a-room / inline-size; }
+.a-room:has(+ .a-menu) { margin-right: -7px; }
+/*
+ * 放不下一个像样的名字时，名字与档位整块收起（而不是只剩一个“Clau…”）：
+ * · 有档位：名字至少 40（“Claud…”约 36）+ 间距 5 + 档位（xhigh 约 34，medium 约 46），以 84 为界——xhigh / max / high / low 在界上都还能留下 6 个字母以上的名字，
+ *   最宽的 medium 也还有“Clau…”。
+ * · 没有档位：名字至少 40，小于 39 就收起。
+ * 收起用的是项目里 .sr-only 的写法（base.css）：视觉上没有，文字仍在可访问性树里；pointer-events: none，不留一个 1px 的悬停目标。
+ * 悬停提示不靠它：模型与推理强度的提示同时挂在正文的头像上（AgentNode 把同一句话挂在 ModelSlot 上），名字收起时头像照样读得到。
+ */
+@container a-room (max-width: 84px) {
+  .a-room .a-model:has(.a-effort) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+    pointer-events: none;
+  }
+}
+@container a-room (max-width: 39px) {
+  .a-room .a-model {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+    pointer-events: none;
+  }
+}
+.a-flag { display: inline-flex; align-items: center; gap: 3px; color: var(--text-3); font-size: 10px; }
+/* “值得留意”的标记：与其他小标记同一个尺寸，只是换了一档暖色（不是红色——它陈述事实，不宣布出了问题）。 */
+.a-flag[data-tone="amber"] { color: var(--amber); font-variant-numeric: tabular-nums; }
+.a-menu.icon-btn { width: 26px; height: 26px; color: #777; }
+.a-dots { display: inline-flex; gap: 2px; }
+.a-dots i { width: 3px; height: 3px; background: currentColor; }
+.agent[data-phase="running"] .a-dots i { animation: dots-wave 1.5s ease-in-out infinite; }
+.agent[data-phase="running"] .a-dots i:nth-child(2) { animation-delay: .16s; }
+.agent[data-phase="running"] .a-dots i:nth-child(3) { animation-delay: .32s; }
+
+/*
+ * 头线以下的正文只有一块：头像 + 标题 / 最近动作两行，在头线与卡底之间垂直居中。纵向以 4px 为基准、行高都是整数：
+ * 内边距盒高 110（112 去掉上下各 1px 的边框），头部 42（含 1px 分割线），正文 68；两行文字 16 + 4 + 16 = 36，上下各留 16——
+ * 间距与边距都是 4 的倍数，不再靠居中算出小数（旧版多一行模型名时，文字块约 53，上下各约 7.5，落在半像素上）。
+ */
+.a-inset {
+  position: absolute;
+  inset: 42px 14px 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+/*
+ * 正文一行：模型头像在左，文字在右。头像没有框，只有图形，格子是 24×24（4 的倍数）：
+ * 图形**可见**的左缘贴着格子的左缘，也就是 x=14，与头部执行端图标的左缘同一条列轴（十二个家族标各自的留白不同，由 ModelSlot 量好后平移）；
+ * 格子 24 + 间距 10，文字起于 x=48（4 的倍数，与旧版相同，标题与副标题的可用宽度没有变化）。
+ * 竖向：头像与两行文字（标题、最近动作）一块居中——这是“头像 + 几行字”的通行写法，眼睛读的是整块文字的中线；
+ * 文字块 16 + 4 + 16 = 36，中线正落在两行之间那 4px 的缝里，头像（24）的墨迹中心就在这条线上，上下各比文字块短 6：头像被两行字“抱”在中间。
+ * 模型名与档位不在这里：它们是头部的一部分（见 .a-model），头像的悬停提示就是它们的全文（AgentNode 把同一句话挂在头像上）。
+ */
+.a-row { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.a-text { display: flex; flex: 1; flex-direction: column; gap: 4px; min-width: 0; }
+/* 两行都是 16 的行高：标题行用固定高度，基线对齐的状态字（10px）再高也撑不出小数；最近动作一行同高，两行之间 4px（见 .a-text 的 gap）。 */
+.a-line { display: flex; align-items: baseline; justify-content: space-between; gap: 7px; height: 16px; min-width: 0; }
+.a-title {
+  min-width: 0;
+  overflow: hidden;
+  color: #171717;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 16px;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.a-title:hover { color: var(--teal); }
+.a-state { display: inline-flex; flex: none; align-items: center; gap: 4px; color: #858585; font-size: 10px; line-height: 1.3; white-space: nowrap; }
+.a-state[data-kind="running"], .a-state[data-kind="failed"], .a-state[data-kind="lost"] { color: var(--teal); }
+.a-run { width: 5px; height: 5px; background: var(--teal); animation: breathe 2s ease-in-out infinite; }
+.a-glyph { flex: none; color: #999; }
+.a-glyph g { stroke: #fff; }
+.a-state[data-kind="failed"] .a-glyph, .a-state[data-kind="lost"] .a-glyph { color: var(--teal); }
+.a-sub { overflow: hidden; height: 16px; color: #898989; font-size: 10.5px; line-height: 16px; text-overflow: ellipsis; white-space: nowrap; }
+.a-sub > span { display: block; overflow: hidden; text-overflow: ellipsis; animation: swap-in .25s var(--ease-out) both; }
+
+.origin { width: 212px; height: 112px; }
+.scene[data-compact] .agent { width: 208px; }
+.scene[data-compact] .origin { width: 150px; }
+/*
+ * 紧凑一档（150 宽，不能再宽，否则侧栏里的取景比例会低于可读底线）：头部与正文的左右内边距同步收到 10，
+ * 让“Main Agent”与会话数同时放得下，卡内的列轴关系不变；头部放不下宿主名的片段，留下一个“/ m…”只会显得残缺，
+ * 名字仍在悬停提示里；日期由 OriginNode 换成同样完整但更短的数字写法。
+ */
+.scene[data-compact] .o-head { padding-inline: 10px; }
+.scene[data-compact] .o-body { inset-inline: 10px; }
+.scene[data-compact] .o-head .a-model { display: none; }
+/*
+ * 来源卡片的版式基准。卡片 212×112、1px 边框；纵向以 4px 为基准，横向与 Agent 卡的头部共用同一套列轴。
+ *   纵向  头部 42（与 Agent 卡头部同高，含分割线）｜内容区 70，占卡片高度的 0.625（≈ 1/φ）。
+ *         内容区只有单行：主行 16、其余行 14。来源卡写着目录行时（窄画布不画 Folder 节点），目录与时间贴在一起（同一组“在哪、何时”），标题隔开一个 4px；
+ *         目录画成了左边的 Folder 节点（或根本没有目录）时，时间升为主行，标题仍隔开一个 4px。
+ *   横向  x=14 头部图标格（13×13，与正文图标同宽，图标在格内居中）与正文图标，x=34 头部文字与正文文字（图标格 13 + 间距 7），右缘留 14。
+ *         这条规则属于 `.o-head` 本身，凡是用它做头部的卡片（来源、Git、其他同版式的卡）都是同一套列轴；
+ *         会话卡头部同轴：执行端图标起于 x=14，名字起于 x=34（图标格、名字用的就是这里的 `.a-mark` / `.o-label`），正文头像的可见左缘也在 x=14、文字起于 x=48（紧凑一档也不变）。
+ *         紧凑一档里 `.o-head` 卡片的左右内边距收到 10，这两条列轴整体左移到 x=10 / x=30。
+ *   字    只用两个字号：12/600 给主行，10.5 给其余。墨色三档：#171717 主行、#525252 标题、#898989 时间与计数（与 Agent 卡副行同值）。
+ * 头部：身份在左（宿主图标、Main Agent，头部最左就是图标，没有抓手或其他装饰），状态在右（会话数，有运行中的会显示与 Agent 卡同款的呼吸点）。
+ */
+.o-head {
+  position: absolute;
+  inset: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 42px;
+  padding: 0 14px;
+  border-bottom: 1px solid #f0f0f0;
+  color: var(--text-2);
+}
+/* 标签是身份，不参与收缩；头部空间不够时先由后面的宿主名（.a-model）让出。 */
+.o-label { flex: none; color: #393939; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.o-count { display: inline-flex; flex: none; align-items: center; gap: 4px; margin-left: auto; color: #858585; font-size: 10px; line-height: 1.3; }
+/*
+ * 隐藏了相关节点的来源卡（data-collapsed）：卡片留在画布上，是再打开的入口；它名下的会话与只为它服务的 Folder / Git 卡都收起了。
+ * 两处提示，都不靠文字：
+ *   · 头部的会话数变成可点的“显示”标记（.o-expand）：位置、数字不变（右缘仍在 x=14 的版心上，靠负外边距抵掉按钮自己的内边距），
+ *     前面多一只关着的眼睛，墨色深一档（#525252，与会话数的 #858585 拉开）——整张卡上只有它在说“有东西被收起了”。
+ *   · 卡片后面叠两层同样的白底细边（只往右下露出 5 / 10px），读作“后面还有一摞”。叠层只出现在右下，不碰左右两侧的中点：
+ *     端口方点在那里，隐藏状态下没有连线，端口本来就不亮。
+ * 叠层用 box-shadow 画，所以悬停、选中、拖动时的阴影要和它写在同一条声明里（后写的 box-shadow 会整条盖掉前面的）。
+ */
+.node.origin[data-collapsed] {
+  --stack: 5px 5px 0 -1px #fff, 5px 5px 0 0 #dedede, 10px 10px 0 -1px #fff, 10px 10px 0 0 #ebebeb;
+  box-shadow: var(--stack);
+}
+.node.origin[data-collapsed]:hover, .node.origin[data-collapsed][data-menu-open], .node.origin[data-collapsed]:has(:focus-visible) {
+  box-shadow: 0 4px 14px rgba(17, 17, 17, .045), var(--stack);
+}
+.node.origin[data-collapsed][data-selected] { box-shadow: 0 0 0 1px rgba(217, 70, 50, .28), var(--stack); }
+.node.origin[data-collapsed][data-dragging] { box-shadow: 0 10px 28px rgba(17, 17, 17, .09), var(--stack); }
+.o-expand {
+  margin: -3px -5px -3px auto;
+  padding: 3px 5px;
+  border: 0;
+  background: none;
+  color: var(--text-2);
+  font-family: inherit;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.o-expand:hover { background: var(--soft-hover); color: #171717; }
+.o-expand:active { background: var(--soft-press); }
+.o-expand:focus-visible { outline: 2px solid rgba(217, 70, 50, .65); outline-offset: 1px; }
+/* 内容区在分割线以下的剩余高度里垂直居中：行盒上下对称，墨迹也就上下对称。 */
+.o-body { position: absolute; inset: 42px 14px 0; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+.o-main { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.o-ico { flex: none; color: #8a8a8a; }
+.o-text { flex: 1; min-width: 0; overflow: hidden; color: #171717; font-size: 12px; font-weight: 600; line-height: 16px; text-overflow: ellipsis; white-space: nowrap; }
+/* 工作目录未知：同一个位置，但不是一个目录名——退到次要信息的灰，不冒充一个真的目录。 */
+.o-text.o-unknown { color: #898989; font-weight: 500; }
+.o-sub, .o-title { display: block; overflow: hidden; padding-left: 20px; font-size: 10.5px; line-height: 14px; text-overflow: ellipsis; white-space: nowrap; }
+.o-sub { color: #898989; }
+/* 宿主给对话起的标题：是“在做什么”，墨色比时间深一档；长了靠悬停看全文。 */
+.o-title { margin-top: 4px; color: var(--text-2); }
+
+/*
+ * Git 卡片与来源卡片同尺寸、同版式（头部 42、内容区 70，列轴 x=14 / x=34），上下摆在一起时一切都对得上：
+ * 主行是分支，其后一行是最近提交（短哈希 + 说明，灰），再隔 4px 是工作区状态（深一档；有冲突才用红，因为那是需要人处理的）。
+ * 头部右端的领先 / 落后是与上游的差距，旧状态（最近一次读取失败）用一个钟表标出。
+ */
+.git { width: 212px; height: 112px; }
+.g-sync { gap: 8px; }
+.g-chip { display: inline-flex; align-items: center; gap: 2px; }
+.g-stale { color: #a3a3a3; }
+.g-sha { margin-right: 6px; }
+.o-title[data-kind="attention"] { color: var(--teal); }
+
+/*
+ * Folder 卡片与来源卡片、Git 卡片同尺寸、同版式（头部 42、内容区 70，头部直接用 `.o-head`，列轴跟着它走）：
+ * 主行是目录名，次行是它的上级路径（灰；放不下时省略在开头，完整路径在悬停提示里）。目录自己没有会变的状态，所以没有第三行。
+ * 头部右端只在不止一个 Main Agent 用它时才有“N 个 Main Agent”。
+ * 端口方点和其它节点一样，由连接层按连线接在哪一边来放（见上面的 `.node-port`）：默认布局里右缘连着来源，
+ * 左缘只有这个目录在 Git 工作树里、有 Git 节点接进来时才有。
+ */
+.folder { width: 212px; height: 112px; }
+/*
+ * 路径放不下时省略在开头：有用的是紧挨着这个目录的几级上级（…\Ensemble\src），而不是盘符与用户目录。
+ * direction: rtl 让省略号落在左边；路径本身在 FolderNode 里用 <bdi dir="ltr"> 隔离，路径内部仍是从左到右。
+ * 放得下时 text-align: left 让它贴着文字列的起点，与主行同一条列轴。
+ */
+.folder .o-sub { direction: rtl; text-align: left; }
+
+.empty {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 82px 24px 112px;
+  text-align: center;
+}
+.ghost { position: relative; max-width: 100%; margin-bottom: 32px; opacity: .75; }
+.ghost svg { position: absolute; inset: 0; overflow: visible; }
+.ghost .pipe-tube { stroke: #dedede; }
+.ghost-node {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 14px;
+  border: 1px dashed #d1d1d1;
+  background: #fff;
+}
+.ghost-mark { display: grid; flex: none; place-items: center; color: #777; }
+.ghost-lines { display: flex; flex: 1; flex-direction: column; align-items: flex-start; gap: 7px; min-width: 0; }
+.ghost-lines i { display: block; height: 4px; background: #e6e6e6; }
+.empty-title { margin: 0 0 20px; font-family: var(--serif); font-size: 25px; font-weight: 500; }
+.empty-actions { display: flex; gap: 10px; }
+/* 只看工作中、眼下没有会话在工作（IdleScene）：标题下一行说明收起了几个。与标题贴近（8），与按钮之间留标题原本到按钮的 20 多一点；出现时淡入，不是“啪”地冒出来。 */
+.empty[data-idle] { animation: swap-in .25s var(--ease-out) both; }
+.empty[data-idle] .empty-title { margin-bottom: 8px; }
+.empty-sub { margin: 0 0 22px; color: var(--text-3); font-size: 13px; }
+/* 说明是最后一项时（EmptyScene、Overview 里的 ActiveEmptyScene：后面没有按钮）不留底部外边距，免得整块在竖直方向上被撑得偏上。 */
+.empty-sub:last-child { margin-bottom: 0; }
+
+@media (max-width: 640px) {
+  .scene { --scene-top: 22px; --scene-side: 22px; }
+  .canvas-meta h1 { font-size: 25px; }
+  .ghost { scale: .72; margin-bottom: -4px; }
+}
+/*
+ * 新会话落在视口之外时的边缘提示（EdgeHints.tsx）：一枚小方块，贴在它所在那条边的正中。
+ * 容器 `.edge-hints` 铺满画布却不接收任何指针事件，只有提示自己接收：平移、框选、右键与滚轮都照常穿透到画布。
+ * 外观是 Dock 与对齐条的同一套浮层（白底、一圈浅边、轻阴影），高 32（对齐条里图标按钮的尺寸），只有一个箭头；多于一个时右边加数量。
+ * 只有箭头与数量用朱红：“这里有新东西”是唯一要强调的信息，提示本身保持中性。
+ * 位置：上、左、右与标题同一条版心线（--scene-top / --scene-side）；底部抬到 Dock 一摞（提示条、对齐条、Dock）的上方，
+ * 抬多高由组件量出来写进 --edge-stack（对齐条出现时跟着抬高），没量到时贴着底边。出现用 node-in（与节点同一种淡入），消失不做动效。
+ */
+.edge-hints { position: absolute; inset: 0; z-index: var(--z-topbar); pointer-events: none; }
+.edge-hint {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid #e5e5e5;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 5px 18px rgba(17, 17, 17, 0.065), 0 1px 3px rgba(17, 17, 17, 0.035);
+  color: var(--teal);
+  font-size: var(--fs-xs);
+  cursor: pointer;
+  pointer-events: auto;
+  animation: node-in var(--dur) var(--ease-out) both;
+}
+.edge-hint[data-multi] { padding: 0 11px 0 10px; }
+.edge-hint:hover { background-image: linear-gradient(var(--soft), var(--soft)); }
+.edge-hint:active { background-image: linear-gradient(var(--soft-press), var(--soft-press)); }
+.edge-hint-count { font-weight: 600; line-height: 1; }
+.edge-hint[data-edge="top"] { top: var(--scene-top); left: 50%; translate: -50% 0; }
+.edge-hint[data-edge="left"] { left: var(--scene-side); top: 50%; translate: 0 -50%; }
+.edge-hint[data-edge="right"] { right: var(--scene-side); top: 50%; translate: 0 -50%; }
+.edge-hint[data-edge="bottom"] { bottom: var(--edge-stack, 18px); left: 50%; translate: -50% 0; }
+/*
+ * 点了提示、被带进视口的那个节点：四周一圈淡朱砂的光晕（1.6s 后收掉，时长与 EdgeHints 的 LANDED_MS 一致）。
+ * 不是选中（选中是朱红的边框）：只回答“是哪一个”，不改选择、不抢焦点。光晕在节点外缘，与 1px 的边框相贴。
+ */
+@keyframes node-landed { 0%, 50% { opacity: 1; } 100% { opacity: 0; } }
+.node[data-landed]::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border: 4px solid var(--accent-soft);
+  pointer-events: none;
+  animation: node-landed 1.6s var(--ease-out) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pipe-packet { animation: none; }
+  .edge-hint { animation: none; }
+  .node[data-landed]::after { animation: none; }
+}

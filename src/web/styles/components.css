@@ -1,0 +1,624 @@
+/* 通用部件（一）：关键帧、外壳、按钮、标签、状态点与进度。
+ * 其余通用部件按引入顺序在 controls.css、content.css、topbar.css；层叠顺序依赖 main.tsx 里的引入顺序。
+ *
+ * 光学约定（见 uiux-optical-audit）：
+ *  - 文字在控件里按“光学居中”处理：底部多留 1–2px，让字形的视觉重心略高于几何中心；
+ *  - 深色实底（Primary / Danger：白字）字重减一档，抵消光渗；浅底深字（Secondary / Ghost）保持 500。
+ *    注意字重的上限：中文字体（微软雅黑 UI 等）只有 400 / 700 两档，CSS 里 >500 会一步跳到粗体，所以浅底深字不能“加一档”到 520+；
+ *  - 直角：全站没有圆角（没有 border-radius、corner-shape，也没有圆形的点；小标记一律是方块，线端是方头）。
+ *    例外只有第三方品牌标 / 模型标（marks/ 下的 SVG）、曲率本身就是图形的几枚图标，和尚未重画的 public/favicon.svg；用量环已经是方环，不在其中；
+ *    守卫在 lib/corner-system.test.ts（例外都登记在里面：BRAND_SVG_DIR、CURVED_ICONS、KEPT）：出现任何非 0 的圆角声明、圆角 token 或圆端线帽，测试就会红；
+ *  - 操作层级：Primary 实心 → Secondary 微表面 → Quiet 透明 → Danger 红色微表面/实心。
+ */
+
+/* ───────────────────────── 关键帧 ───────────────────────── */
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ping {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  75%,
+  100% {
+    transform: scale(2.7);
+    opacity: 0;
+  }
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.38;
+  }
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes caret {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ───────────────────────── 外壳 ───────────────────────── */
+
+.app {
+  display: grid;
+  grid-template-rows: var(--topbar-h) minmax(0, 1fr);
+  height: 100%;
+  min-height: 0;
+  background: var(--bg);
+}
+
+.stage {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.spacer {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.muted {
+  margin: 0;
+  color: var(--text-3);
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+.boot {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--text-3);
+  font-size: 13px;
+}
+
+/* 启动页的转动标记是 18×18：框内 16，带子 8，行程 8 格，几何与 ui.tsx 里 Spinner 对 size = 18 算出来的一致（那里写在行内，这个元素没有走 Spinner）。 */
+.boot .spinner {
+  --spin-band: 8px;
+  --spin-n: 9;
+  color: var(--teal);
+}
+
+.boot--offline {
+  padding: 24px;
+}
+
+.state-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  max-width: 440px;
+  margin: auto;
+  padding: 44px 32px;
+  text-align: center;
+}
+
+.state-icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  background: var(--soft);
+  color: var(--text-2);
+}
+
+.state-icon[data-tone="red"] {
+  background: var(--red-bg);
+  color: var(--red);
+}
+
+.state-card h2 {
+  margin: 10px 0 0;
+  font-size: 17px;
+  font-weight: 580;
+  letter-spacing: 0.005em;
+}
+
+.state-card p {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 13.5px;
+  line-height: 1.7;
+}
+
+.state-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 28px;
+}
+
+.skeleton i {
+  display: block;
+  height: 12px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.04) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.04) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+.banner {
+  flex: none;
+  margin: 10px 16px 0;
+  padding: 9px 14px 10px;
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+.banner--amber {
+  background: var(--amber-bg);
+  color: var(--amber);
+}
+
+.tabs {
+  display: flex;
+  flex: none;
+  gap: 2px;
+  margin: 12px 16px 0;
+  padding: 3px;
+  background: rgba(0, 0, 0, 0.24);
+}
+
+.tabs button {
+  position: relative;
+  flex: 1;
+  height: 30px;
+  padding: 0 10px 2px;
+  color: var(--text-3);
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+
+.tabs button:hover:not([data-active]) {
+  color: var(--text);
+}
+
+.tabs button[data-active] {
+  background: #484848;
+  color: var(--text);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* ───────────────────────── 按钮 ───────────────────────── */
+
+.btn {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 32px;
+  padding: 0 14px 2px;
+  background: var(--soft);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  user-select: none;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.btn svg {
+  flex: none;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--soft-hover);
+}
+
+.btn:active:not(:disabled) {
+  background: var(--soft-press);
+  transform: translateY(0.5px) scale(0.985);
+}
+
+.btn:disabled {
+  color: var(--text-4);
+}
+
+/* Primary：深色实底配白字。暗底上的白字会向外“渗”（光渗），看起来比同字重的深字更粗，所以字重减到 480；
+   中文字体没有 480 这一档，落到常规体（≤500 都是常规），拉丁字母用可变字重的 480。主次靠底色，不靠字重。 */
+.btn--primary {
+  background: var(--fill);
+  color: var(--ink);
+  font-weight: 480;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5) inset, 0 6px 16px -8px rgba(0, 0, 0, 0.6);
+}
+
+.btn--primary:hover:not(:disabled) {
+  background: var(--fill-hover);
+}
+
+.btn--primary:active:not(:disabled) {
+  background: #d8dede;
+}
+
+.btn--primary:disabled:not([aria-busy="true"]) {
+  background: var(--soft);
+  color: var(--text-4);
+  box-shadow: none;
+}
+
+/* Secondary：微表面，是默认样式；Ghost 保留给旧用法，等同 Secondary。 */
+.btn--ghost {
+  background: var(--soft);
+  color: var(--text);
+}
+
+/* Quiet：透明底，用于“返回”这类不抢戏的操作。 */
+.btn--back {
+  gap: 5px;
+  padding-left: 9px;
+  background: transparent;
+  color: var(--text-2);
+}
+
+.btn--back:hover:not(:disabled) {
+  color: var(--text);
+}
+
+/* Danger：红色微表面用于可撤销的中断，实心红用于确认删除。 */
+.btn--danger-ghost {
+  background: var(--red-bg);
+  color: var(--red);
+}
+
+.btn--danger-ghost:hover:not(:disabled) {
+  background: rgba(240, 122, 118, 0.22);
+}
+
+.btn--danger {
+  background: var(--red);
+  color: #2b1110;
+  font-weight: 480;
+}
+
+.btn--danger:hover:not(:disabled) {
+  background: #f68f8b;
+}
+
+.btn--danger:disabled:not([aria-busy="true"]) {
+  background: var(--soft);
+  color: var(--text-4);
+}
+
+/* 忙碌（aria-busy）：这个按钮就是正在进行的那个操作——保持自己的底色，只淡一点，由转圈表达“进行中”；
+   灰掉的是同排另一个被禁用的按钮。否则“删除记录”一点就整块变灰，红色的语义和转圈都丢了。 */
+.btn[aria-busy="true"]:disabled {
+  cursor: progress;
+  opacity: 0.78;
+}
+
+.btn--primary[aria-busy="true"]:disabled,
+.btn--danger[aria-busy="true"]:disabled {
+  color: #fff;
+}
+
+.btn--icon {
+  padding-inline: 11px;
+  gap: 6px;
+}
+
+.btn kbd {
+  display: inline-grid;
+  place-items: center;
+  height: 18px;
+  min-width: 18px;
+  margin-left: 3px;
+  padding: 0 5px 1px;
+  background: rgba(0, 0, 0, 0.14);
+  color: inherit;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  line-height: 1;
+  opacity: 0.7;
+}
+
+.btn--primary:disabled kbd {
+  background: var(--soft);
+}
+
+html[lang="zh-CN"] .btn,
+html[lang="zh-CN"] .segmented button,
+html[lang="zh-CN"] .tabs button,
+html[lang="zh-CN"] .chip {
+  letter-spacing: 0.03em;
+}
+
+.icon-btn {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  color: var(--text-3);
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), opacity var(--dur-fast) var(--ease-out);
+}
+
+.icon-btn:hover:not(:disabled),
+.icon-btn[data-open] {
+  background: var(--soft-hover);
+  color: var(--text);
+}
+
+.icon-btn:active:not(:disabled) {
+  background: var(--soft-press);
+}
+
+.icon-btn:disabled {
+  opacity: 0.35;
+}
+
+.icon-btn[data-active] {
+  color: var(--teal);
+}
+
+.icon-btn[data-tone="danger"]:hover:not(:disabled) {
+  background: var(--red-bg);
+  color: var(--red);
+}
+
+.icon-btn--bare {
+  width: 22px;
+  height: 22px;
+}
+
+.icon-btn.is-spinning svg {
+  animation: spin 0.9s linear infinite;
+}
+
+.link-btn {
+  display: inline;
+  padding: 0;
+  color: var(--text-2);
+  font-size: 12px;
+  line-height: 1.5;
+  text-decoration: underline;
+  /* 下划线跟着文字色走：白底上用半透明的墨色，悬停时变实。 */
+  text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
+  text-underline-offset: 3px;
+  transition: color var(--dur-fast) var(--ease-out), text-decoration-color var(--dur-fast) var(--ease-out);
+}
+
+.link-btn:hover {
+  color: var(--text);
+  text-decoration-color: currentColor;
+}
+
+/* ───────────────────────── 标签 ───────────────────────── */
+
+.chip {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  padding: 0 7px 1px;
+  background: var(--soft);
+  color: var(--text-2);
+  font-size: 11.5px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.chip svg {
+  flex: none;
+}
+
+.chip[data-tone="teal"] {
+  background: var(--teal-bg);
+  color: var(--teal);
+}
+
+.chip[data-tone="amber"] {
+  background: var(--amber-bg);
+  color: var(--amber);
+}
+
+.chip[data-tone="red"] {
+  background: var(--red-bg);
+  color: var(--red);
+}
+
+.chip[data-tone="blue"] {
+  background: var(--blue-bg);
+  color: var(--blue);
+}
+
+.chip[data-tone="violet"] {
+  background: var(--violet-bg);
+  color: var(--violet);
+}
+
+.badge {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  height: 18px;
+  padding: 0 6px 1px;
+  background: var(--soft);
+  color: var(--text-2);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.badge--amber {
+  background: var(--amber-bg);
+  color: var(--amber);
+}
+
+.badge--violet {
+  background: var(--violet-bg);
+  color: var(--violet);
+}
+
+/* ───────────────────────── 状态点、转动标记、进度 ───────────────────────── */
+
+/*
+ * 转动标记：不转圈，没有圆弧。一个空心方块（1px 的框，字色），框里一道占半个框高的带子，在框里一格一格上下推移；
+ * 与设置窗口的“检测中”（sidebar.css 的 .status-pip[data-status="checking"]）是同一套画法：同一圈 1px 线、同一道占半框的带子、
+ * 同样每格 1px、每格 0.3s，来回时两端各停两拍。大小由 ui.tsx 里 Spinner 的 size 决定，几何跟着 size 走（行内写入）：
+ *   --spin-band  带子的高：框内高度（size − 2）的一半，向下取整；
+ *   --spin-n     带子能停的位置数 = 行程 + 1（行程 = 框内高度 − 带子高；每格 1px，所以每一帧都落在整像素上，线不发虚）。
+ * 缺省值是 size = 12 的一组（框内 10、带子 5、行程 5 → 6 个位置）。
+ * 带子画在 background 上，不另起元素；起笔在下半格，也就是静止时的样子：base.css 在“减少动态效果”下把所有动画压成一次 0.001ms，
+ * 结束后回到这里写的起笔位置，停在半满的方块上，不动也读得出“进行中”，不必另写一套。只动 background-position（只重绘，不排版）。
+ */
+.spinner {
+  display: inline-block;
+  flex: none;
+  color: var(--teal);
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-size: calc(100% - 2px) var(--spin-band, 5px);
+  background-position: 1px calc(100% - 1px);
+  box-shadow: inset 0 0 0 1px currentColor;
+  animation: spinner-wait calc(var(--spin-n, 6) * 0.3s) steps(var(--spin-n, 6), jump-none) infinite alternate;
+}
+
+@keyframes spinner-wait {
+  to {
+    background-position: 1px 1px;
+  }
+}
+
+/* 按钮里的转动标记跟随按钮的字色：框与带子都用字色本身（不沿用 .spinner 的朱砂：朱砂画在红色按钮上会和底色融在一起）。 */
+.btn .spinner {
+  color: inherit;
+}
+
+/* 状态点是方块：实心 = 在场 / 已有结果，空心 = 尚未开工或已脱离执行端（见下）；大小由 ui.tsx 的 StatusDot 行内写入。 */
+.status-dot {
+  --c: var(--text-3);
+  position: relative;
+  display: inline-block;
+  flex: none;
+  background: var(--c);
+}
+
+.status-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--c);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.status-dot[data-phase="running"] {
+  --c: var(--teal);
+}
+
+.status-dot[data-phase="running"]::after {
+  animation: ping 1.9s var(--ease-out) infinite;
+}
+
+.status-dot[data-phase="done"] {
+  --c: var(--teal-dim);
+}
+
+.status-dot[data-phase="failed"] {
+  --c: var(--red);
+}
+
+.status-dot[data-phase="stopped"] {
+  --c: var(--text-4);
+}
+
+/* 空心方块（1px 的框，与设置窗口的状态标记同一画法）：尚未真正“开工”或已脱离执行端的状态。 */
+.status-dot[data-phase="ready"],
+.status-dot[data-phase="starting"],
+.status-dot[data-phase="queued"],
+.status-dot[data-phase="cancelled"],
+.status-dot[data-phase="lost"] {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--c);
+}
+
+.status-dot[data-phase="starting"],
+.status-dot[data-phase="queued"] {
+  --c: var(--blue);
+  animation: breathe 1.8s ease-in-out infinite;
+}
+
+.status-dot[data-phase="cancelled"] {
+  --c: var(--amber);
+}
+
+.status-dot[data-phase="lost"] {
+  --c: var(--red);
+}

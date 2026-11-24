@@ -1,0 +1,67 @@
+/* Shared light treatment for the workspace shell, canvas, session view and dialogs. */
+.app { position: relative; display: flex; width: 100%; height: 100%; overflow: hidden; background: #fff; }
+.stage { position: relative; flex: 1; min-height: 0; overflow: hidden; }
+.btn--primary { background: #191919; color: #fff; box-shadow: none; }
+.btn--primary:hover:not(:disabled) { background: #363636; }
+.btn--primary:active:not(:disabled) { background: #444; }
+.btn--danger { background: var(--red); color: #fff; box-shadow: none; }
+.btn--danger:hover:not(:disabled) { background: #aa3325; }
+.btn kbd { border-color: rgba(255,255,255,.24); color: inherit; }
+
+.tip { background: #242424; color: #fff; box-shadow: 0 5px 18px rgba(0,0,0,.16); }
+.menu { background: #fff; box-shadow: 0 0 0 1px #e8e8e8, var(--shadow-pop); }
+.toast { background: #fff; }
+/* 概览已移除底部大胶囊 Dock，toast 只需避开右下角 30px 图纸比例尺（56px）；聚焦页仍贴着输入区上沿浮出。 */
+.toasts { bottom: 56px; }
+.app[data-view="session"] .toasts { bottom: 20px; }
+.composer { anchor-name: --composer; }
+@supports (anchor-name: --composer) {
+  .app[data-view="session"] .toasts { bottom: calc(anchor(--composer top, 12px) + 8px); }
+}
+.segmented { background: #f2f2f2; }
+.segmented button[data-active] { background: #fff; color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,.10); }
+.input { background-color: #fff; box-shadow: inset 0 0 0 1px #dadada; }
+.input:focus { box-shadow: inset 0 0 0 1px var(--teal), 0 0 0 3px rgba(217,70,50,.08); }
+.section { background: transparent; box-shadow: none; border-bottom: 1px solid #ececec; }
+.section-body { padding-bottom: 18px; }
+.status-dot[data-phase="done"] { background: #7d7d7d; }
+/* 本主题里 --teal 与 --red 都是朱砂色，“已生效”若用朱砂方块会和“投递失败”无法区分；完成态沿用上面的中性灰，只有失败保留红色。 */
+.stage-dot[data-stage="applied"] { background: #7d7d7d; }
+.status-dot[data-phase="running"] { background: var(--teal); }
+/* 聚焦页没有底部工具栏，底部只留与 .focus-body 顶内边距同值的 20px（窄屏 12px）；仅当无侧栏且存在底角状态提示时多留一条。 */
+.focus { bottom: 20px; }
+.app:has(.status-notices[data-place="floating"]) .focus { bottom: 52px; }
+.focus-head {
+  margin: 0 28px;
+  padding: 20px 0 18px;
+  border-bottom: 1px solid #e7e7e7;
+  background: transparent;
+  box-shadow: none;
+}
+.head-top { margin-bottom: 19px; }
+.head-title { font-family: var(--serif); font-size: 25px; font-weight: 600; letter-spacing: -.01em; }
+.head-activity { margin-top: 18px; }
+.focus-body { gap: 24px; padding: 20px 28px 0; }
+.focus-body--wide { grid-template-columns: minmax(240px, 290px) minmax(0, 1fr) minmax(240px, 300px); }
+.focus-main { background: #fff; box-shadow: 0 0 0 1px #ededed; }
+.focus[data-mode="narrow"] .focus-head { margin: 0 18px; padding: 16px 0; }
+.focus[data-mode="narrow"] .focus-body { padding: 12px 18px 0; }
+.focus[data-mode="narrow"] .head-title { font-size: 21px; }
+.rail { padding-right: 2px; }
+.panel-stack { gap: 0; }
+.tabs { margin: 12px 18px 0; padding: 0; border-bottom: 1px solid #eaeaea; background: #fff; }
+.tabs button { height: 38px; }
+.tabs button[data-active] { background: transparent; color: #171717; box-shadow: inset 0 -2px var(--teal); font-weight: 600; }
+.error-detail, .ctx { background: #f5f5f5; }
+.error-banner { border-bottom-color: #eec9c3; }
+.error-icon { background: var(--red-bg); }
+/* 对话区（消息、工作组、输入框、投递轨迹）的外观都在 timeline.css / intervention.css / content.css，这里不再覆盖。 */
+
+.overlay-backdrop { background: rgba(24,24,24,.22); backdrop-filter: blur(2px); }
+.overlay-panel { background: #fff; }
+.settings-title, .confirm-title { font-family: var(--serif); font-size: 22px; font-weight: 600; }
+@media (max-width: 640px) {
+  .focus { bottom: 12px; }
+  .toasts { left: 12px; right: 12px; bottom: 52px; }
+  .toast { max-width: 100%; }
+}

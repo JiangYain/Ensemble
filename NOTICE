@@ -1,0 +1,40 @@
+Ensemble
+Copyright (c) 2026 Chord. Ensemble's own code is released under the MIT License (see LICENSE).
+
+本仓库还包含下列第三方内容，它们各自遵循自己的许可证与商标规定，不受 Ensemble 的 MIT 许可证改变。
+This repository also ships the third-party material below. It stays under its own license and trademark terms.
+
+------------------------------------------------------------------------
+mosoo-agent-driver（@mosoo/agent-driver）
+    版权所有 LangGenius, Inc. 及贡献者
+    上游：https://github.com/langgenius/mosoo-agent-driver
+    提交：49df36e9735f261829ea90b6570382bd33a67775
+    许可证：Apache License 2.0（全文见 vendor/mosoo-agent-driver/LICENSE.txt）
+    位置：vendor/mosoo-agent-driver
+
+    Ensemble 对这份代码做了修改：删减了未使用的目录，新增了 Cursor SDK 后端，
+    并改写了后端注册表。每个被修改或新增的文件顶部都有 “ENSEMBLE MODIFIED” 或
+    “ENSEMBLE ADDED” 的注释，完整清单见 vendor/mosoo-agent-driver/VENDORING.md。
+    上游没有随附 NOTICE 文件。本说明不表示上游项目认可 Ensemble。
+
+------------------------------------------------------------------------
+Agent Plugins 1.0.0 的 JSON Schema（test/fixtures/agent-plugins/）
+    版权属 Agent Plugins 项目的作者与贡献者。
+    上游：https://github.com/agentplugins/agent-plugins-spec（schemas/1.0.0/，与 https://agent-plugins.org 发布的内容相同）
+    许可证：Apache License 2.0（上游 LICENSE.md 规定其中的 Schema 与代码适用该许可；
+    全文见 test/fixtures/agent-plugins/LICENSE-Apache-2.0.txt）
+    这两份文件取自 2026-11-07，没有修改：与上游同名文件逐字相同（2026-11-24 核对，忽略换行符与文件结尾的换行）。
+    只用于离线校验插件清单。
+
+------------------------------------------------------------------------
+字体
+    Inter、JetBrains Mono、Cormorant Garamond，均为 SIL Open Font License 1.1。
+    许可全文：src/web/fonts/LICENSE.txt、src/web/public/licenses/CORMORANT-OFL.txt
+
+------------------------------------------------------------------------
+执行端与模型的名称、标识
+    它们是各自所有者的商标，只用来标明对应的执行端或模型，不表示所有者认可 Ensemble。
+    The names and marks of the harnesses and models shown in the UI are trademarks of their
+    respective owners; they identify the harness or model only and imply no endorsement.
+    来源与条款：src/web/marks/README.md、src/web/public/licenses/HARNESS-MARKS.md、
+    src/web/public/licenses/MODEL-MARKS.md（模型标识的形状取自 @lobehub/icons-static-svg，MIT）。

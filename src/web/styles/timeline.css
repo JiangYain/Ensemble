@@ -1,0 +1,980 @@
+/* 聚焦视图的对话区：阅读列、消息、执行端的工作过程（工具调用与推理）、计划、诊断与分隔。
+ * 输入框在 intervention.css。层叠顺序依赖 main.tsx 里的引入顺序。
+ *
+ * 读法：像读一份记录。派发方的话靠右成气泡；执行端的话靠左铺开，一段发言只署一次名；
+ * 过程默认收成安静的一行文字，只有进行中和失败带颜色。 */
+
+/* ───────────────────────── 版式、节奏与语义色 ─────────────────────────
+ *
+ * 阅读列宽 672px：13.5px 正文下，中文每行约 50 字（中英混排实测约 53 个字符），英文约 98 个字符。面板更宽时居中，更窄时收到面板宽度。
+ * 垂直节奏取 8 / 16 / 24 / 32：8 = 署名与正文之间；16 = 同一段发言里相邻的块；24 = 新一段发言、运行分隔线；32 = 派发方消息之前。
+ * 正文 13.5px / 24px（行高占 6 个 4px 网格；字号沿用现有字号体系，不为这一处另立 14px），Markdown 段间距 12px（半行）。
+ *
+ * 颜色：Ensemble 目前只有浅色主题，这里不做主题系统。对话区用到的颜色都先映射成下面这几个“角色”，
+ * 规则里只引用角色，不写具体色值；将来要做深色，只需替换这一组映射。
+ * 朱砂（--teal）在对话区只出现在三处：进行中（转动标记）、键盘焦点（输入框外框）、定位到消息时的外框。已完成不是朱砂——
+ * 本主题里朱砂与红是同一种颜色，完成用朱砂就会和失败混在一起。 */
+.focus-main {
+  container: conv / inline-size;
+  --conv-measure: 672px;
+  --conv-gutter: 28px;
+  --conv-tight: 8px;
+  --conv-row: 16px;
+  --conv-block: 24px;
+  --conv-turn: 32px;
+  --conv-lh: 24px;
+  --conv-bubble-max: 85%;
+
+  --conv-ink: var(--text);
+  --conv-ink-2: var(--text-2);
+  --conv-ink-3: var(--text-3);
+  --conv-faint: var(--text-4);
+  --conv-surface: var(--bg-raise);
+  --conv-sunken: var(--inset-deep);
+  --conv-hairline: var(--line);
+  --conv-rule: var(--line-strong);
+  --conv-hover: var(--soft);
+  --conv-hover-strong: var(--soft-hover);
+  --conv-live: var(--teal);
+  --conv-live-tint: var(--teal-bg);
+  --conv-danger: var(--red);
+  --conv-danger-tint: var(--red-bg);
+  --conv-warn: var(--amber);
+  --conv-warn-tint: var(--amber-bg);
+}
+
+/* 面板变窄：留白收一档，气泡可以更宽。失败提示条的左右留白与阅读列保持一致。 */
+@container conv (max-width: 560px) {
+  .timeline,
+  .composer,
+  .error-banner {
+    --conv-gutter: 20px;
+    --conv-bubble-max: 92%;
+  }
+}
+
+@container conv (max-width: 420px) {
+  .timeline,
+  .composer,
+  .error-banner {
+    --conv-gutter: 16px;
+  }
+}
+
+/* ───────────────────────── 时间线 ───────────────────────── */
+
+.timeline {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* 顶部工具条：只有内容滚到它下面时才出现分隔线。 */
+.timeline-tools {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: 36px;
+  padding: 0 var(--conv-gutter);
+  border-bottom: 1px solid transparent;
+  color: var(--conv-ink-3);
+  font-size: 12px;
+  transition: border-color var(--dur) var(--ease-out);
+}
+
+.timeline[data-scrolled] .timeline-tools {
+  border-bottom-color: var(--conv-hairline);
+}
+
+.timeline-count {
+  white-space: nowrap;
+}
+
+/* 滚动条出现与否不改变版面宽度：流式输出把内容撑到超出视口的那一刻，文字不会重新换行。 */
+.timeline-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+/* 底部留白一部分给跳到最新的按钮；上内边距与脚本里的 REVEAL_TOP_GAP 一致。 */
+.timeline-inner {
+  display: flex;
+  flex-direction: column;
+  max-width: calc(var(--conv-measure) + 2 * var(--conv-gutter));
+  margin: 0 auto;
+  padding: 18px var(--conv-gutter) 44px;
+}
+
+/* 行与行的间距：每一行只设自己的上边距，由行的类型决定。 */
+.timeline-inner > * {
+  margin-top: var(--conv-row);
+}
+
+.timeline-inner > :first-child {
+  margin-top: 0;
+}
+
+.timeline-inner > .turn-head,
+.timeline-inner > .run-marker {
+  margin-top: var(--conv-block);
+}
+
+.timeline-inner > .msg--message {
+  margin-top: var(--conv-turn);
+}
+
+.timeline-inner > .turn-head + * {
+  margin-top: var(--conv-tight);
+}
+
+.timeline-inner > :first-child.turn-head,
+.timeline-inner > :first-child.msg--message,
+.timeline-inner > :first-child.run-marker {
+  margin-top: 0;
+}
+
+.timeline-empty {
+  padding: 48px 0;
+  color: var(--conv-ink-3);
+  font-size: 13px;
+  text-align: center;
+}
+
+.more-btn {
+  align-self: center;
+  height: 28px;
+  padding: 0 14px 2px;
+  background: var(--conv-hover);
+  color: var(--conv-ink-2);
+  font-size: 12px;
+  line-height: 1;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+
+.more-btn:hover {
+  background: var(--conv-hover-strong);
+  color: var(--conv-ink);
+}
+
+/* 工作组内部的“显示更早的步骤”：只是一行安静的文字，对齐步骤的图标列。 */
+.more-btn--inline {
+  display: flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 6px;
+  height: 28px;
+  margin: 0 0 2px;
+  padding: 0 8px 1px 6px;
+  background: transparent;
+  color: var(--conv-ink-3);
+  font-size: 12px;
+}
+
+.more-btn--inline:hover {
+  background: var(--conv-hover);
+  color: var(--conv-ink-2);
+}
+
+/* 回到最新：离开底部后一直在；离开期间有新内容时变成带字的按钮。 */
+.jump {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 14px 1px 12px;
+  background: var(--conv-surface);
+  box-shadow: 0 0 0 1px var(--conv-rule), 0 6px 16px -6px color-mix(in srgb, var(--fill) 22%, transparent);
+  color: var(--conv-ink-2);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  translate: -50% 0;
+  animation: fade-up var(--dur) var(--ease-out) backwards;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+
+.jump:not([data-new]) {
+  width: 32px;
+  padding: 0;
+}
+
+.jump:hover {
+  background: var(--bg-deep);
+  color: var(--conv-ink);
+}
+
+.jump[data-new] {
+  background: var(--fill);
+  box-shadow: 0 8px 20px -8px color-mix(in srgb, var(--fill) 55%, transparent);
+  color: var(--ink);
+}
+
+.jump[data-new]:hover {
+  background: var(--fill-hover);
+  color: var(--ink);
+}
+
+/* 内容滚到输入框上沿时淡出，而不是被一刀切断。 */
+.timeline::after {
+  content: "";
+  position: absolute;
+  right: 12px;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  height: 20px;
+  background: linear-gradient(to top, var(--conv-surface), transparent);
+  pointer-events: none;
+}
+
+/* 新到的一行淡入上来（只对提交之后才出现的行；一开始就在的不动）。 */
+@keyframes conv-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.timeline-inner [data-enter] {
+  animation: conv-in var(--dur-slow) var(--ease-out) backwards;
+}
+
+.row-time {
+  flex: none;
+  color: var(--conv-ink-3);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+/* ───────────────────────── 执行端的发言：署名与回复 ───────────────────────── */
+
+.turn-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 20px;
+  color: var(--conv-ink-3);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.turn-head .harness-mark {
+  flex: none;
+}
+
+.turn-name {
+  color: var(--conv-ink);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.turn-tag {
+  color: var(--conv-ink-3);
+}
+
+/* 分隔点画成 2×2 的方块（字符 "·" 是圆的）：竖向取行内的中线，与字间的间距沿用原来的 8px。下面两处同理。 */
+.turn-tag::before,
+.turn-head .row-time::before {
+  content: "";
+  display: inline-block;
+  width: 2px;
+  height: 2px;
+  margin-right: 8px;
+  vertical-align: middle;
+  background: var(--conv-faint);
+}
+
+.msg--assistant {
+  position: relative;
+  color: var(--conv-ink);
+}
+
+/* 过程说明：同样的字号，降一级的颜色。 */
+.msg--assistant[data-phase="commentary"] .md {
+  color: var(--conv-ink-2);
+}
+
+/* 一段发言里后面的回复不再署名；时刻（和“过程说明”）只在悬停或聚焦时浮在它上方的行距里。 */
+.msg-aside {
+  position: absolute;
+  top: -15px;
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--conv-ink-3);
+  font-size: 12px;
+  line-height: 14px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+
+.msg--assistant:hover .msg-aside,
+.msg--assistant:focus-within .msg-aside {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .msg-aside {
+    display: none;
+  }
+}
+
+.msg-aside .row-time {
+  font-size: inherit;
+}
+
+/* ───────────────────────── 派发方的消息 ───────────────────────── */
+
+.msg--message {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.msg-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 16px;
+  margin-bottom: 6px;
+  color: var(--conv-ink-3);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.msg-head > * + *::before {
+  content: "";
+  display: inline-block;
+  width: 2px;
+  height: 2px;
+  margin-right: 8px;
+  vertical-align: middle;
+  background: var(--conv-faint);
+}
+
+.msg-author {
+  color: var(--conv-ink-2);
+}
+
+/* 纠偏用琥珀（偏暖的灰褐）标出——它是用户的介入；委派与继续交代保持中性。 */
+.msg-kind[data-kind="steer"] {
+  color: var(--conv-warn);
+}
+
+.msg-bubble {
+  max-width: var(--conv-bubble-max);
+  padding: 10px 14px 11px;
+  background: var(--conv-sunken);
+}
+
+.msg-text {
+  color: var(--conv-ink);
+  font-size: 13.5px;
+  line-height: var(--conv-lh);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.msg-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px 14px;
+  max-width: 100%;
+  margin-top: 8px;
+}
+
+/* 从右栏“消息记录”定位过来后，气泡的外环先停一会儿再淡出，指明是哪一条。标记由脚本在 FLASH_MS 后摘掉。 */
+.msg--message[data-flash] .msg-bubble {
+  animation: msg-flash 2.4s var(--ease-out) both;
+}
+
+@keyframes msg-flash {
+  0%,
+  40% {
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--conv-live) 70%, transparent),
+      0 0 0 4px color-mix(in srgb, var(--conv-live) 12%, transparent);
+  }
+  100% {
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--conv-live) 0%, transparent),
+      0 0 0 4px color-mix(in srgb, var(--conv-live) 0%, transparent);
+  }
+}
+
+/* 减少动态效果：不淡出，外环静止地亮一会儿再消失。 */
+@media (prefers-reduced-motion: reduce) {
+  .msg--message[data-flash] .msg-bubble {
+    animation: none;
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--conv-live) 70%, transparent),
+      0 0 0 4px color-mix(in srgb, var(--conv-live) 12%, transparent);
+  }
+}
+
+/* ───────────────────────── 工作组：连续的工具调用与推理 ─────────────────────────
+ *
+ * 收起时是一行文字，没有边框与底色；展开后步骤沿左侧一条细线排开。
+ * 第一列（收起箭头、步骤图标）都是 18px 宽，竖线落在箭头的中心。 */
+
+.work {
+  position: relative;
+}
+
+.work--solo {
+  display: flex;
+  flex-direction: column;
+}
+
+.work-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  max-width: calc(100% + 6px);
+  min-height: 38px;
+  margin-left: -6px;
+  padding: 0 10px 1px 6px;
+  color: var(--conv-ink-3);
+  font-size: 12.5px;
+  line-height: 20px;
+  text-align: left;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+
+.work-head:hover {
+  background: var(--conv-hover);
+  color: var(--conv-ink-2);
+}
+
+.work-chevron {
+  flex: none;
+  width: 18px;
+  height: 12px;
+  transition: transform var(--dur) var(--ease-out);
+}
+
+.work[data-open] .work-chevron {
+  transform: rotate(90deg);
+}
+
+.work-title {
+  flex: none;
+  color: var(--conv-ink-2);
+  white-space: nowrap;
+}
+
+/* 进行中：标题升到正文色。转动标记只放在真正在跑的那一步和末尾的“现在”那一行，标题上不再多一个。 */
+.work[data-live] .work-title {
+  color: var(--conv-ink);
+}
+
+.work-mix {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.work-mix::before {
+  content: "";
+  display: inline-block;
+  width: 2px;
+  height: 2px;
+  margin-right: 8px;
+  vertical-align: middle;
+  background: var(--conv-faint);
+}
+
+.work-failed {
+  flex: none;
+  color: var(--conv-danger);
+  white-space: nowrap;
+}
+
+.work-dur {
+  flex: none;
+  white-space: nowrap;
+}
+
+/* 展开与收起：高度与透明度一起走；收起时先播完再卸载（见 lib/presence.ts，时长与这里一致）。 */
+.work-panel {
+  display: grid;
+  grid-template-rows: 1fr;
+  margin-left: 9px;
+  animation: work-open var(--dur) var(--ease-out);
+}
+
+.work-panel[data-state="closing"] {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  pointer-events: none;
+  animation: work-close var(--dur) var(--ease-out);
+}
+
+@keyframes work-open {
+  from {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+  to {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+}
+
+@keyframes work-close {
+  from {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+  to {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+}
+
+/* 上下各留 4px：键盘焦点环不会被 overflow 裁掉。 */
+.work-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 4px 0 4px 10px;
+  overflow: hidden;
+  border-left: 1px solid var(--conv-hairline);
+}
+
+.tool-head,
+.reasoning-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 32px;
+  padding: 0 6px 1px;
+  text-align: left;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.tool-head:not(:disabled):hover,
+.reasoning-head:not(:disabled):hover {
+  background: var(--conv-hover);
+}
+
+.tool-head:disabled,
+.reasoning-head:disabled {
+  cursor: default;
+}
+
+/* 步骤组的正文要裁掉溢出（折叠动画需要），默认向外 2px 的焦点环会在右边被切掉；这里改成画在行内。 */
+.work-body :is(.tool-head, .reasoning-head, .more-btn--inline):focus-visible {
+  outline-offset: -2px;
+}
+
+.tool-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  color: var(--conv-ink-3);
+}
+
+.tool-verb {
+  flex: none;
+  min-width: 36px;
+  color: var(--conv-ink-3);
+  font-size: 12px;
+}
+
+.tool-title {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--conv-ink-2);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tool-title em {
+  margin-right: 8px;
+  color: var(--conv-ink-3);
+  font-style: normal;
+}
+
+.tool-end {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 10px;
+  color: var(--conv-ink-3);
+  font-size: 11.5px;
+}
+
+.tool-files {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.tool-state {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  color: var(--conv-ink-3);
+}
+
+/* 颜色只给进行中和失败：进行中的步骤升到正文色（图标位置是朱砂的转动标记），失败的步骤末尾有红色 ✗。
+   已完成不加任何标记。 */
+.tool[data-status="running"] .tool-title,
+.tool[data-status="failed"] .tool-title {
+  color: var(--conv-ink);
+}
+
+.tool[data-status="running"] .tool-verb {
+  color: var(--conv-ink-2);
+}
+
+.tool[data-status="failed"] .tool-state {
+  color: var(--conv-danger);
+}
+
+.tool[data-status="unfinished"] .tool-state {
+  color: var(--conv-warn);
+}
+
+/* 展开箭头只在悬停、聚焦或已展开时出现：默认一列干净的文字；触屏没有悬停，一直显示。 */
+.tool-chevron {
+  opacity: 0;
+  transition: transform var(--dur) var(--ease-out), opacity var(--dur-fast) var(--ease-out);
+}
+
+.tool-head:hover .tool-chevron,
+.tool-head:focus-visible .tool-chevron,
+.reasoning-head:hover .tool-chevron,
+.reasoning-head:focus-visible .tool-chevron,
+.tool[data-open] .tool-chevron,
+.reasoning[data-open] .tool-chevron {
+  opacity: 1;
+}
+
+.tool[data-open] .tool-chevron,
+.reasoning[data-open] .tool-chevron {
+  transform: rotate(90deg);
+}
+
+@media (hover: none) {
+  .tool-chevron {
+    opacity: 1;
+  }
+}
+
+.tool-chevron-gap {
+  width: 12px;
+}
+
+/* 步骤详情与图标后面的文字（动词列）左对齐：6px 内边距 + 18px 图标 + 8px 间隙。 */
+.tool-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 2px 6px 10px 32px;
+  animation: fade-up var(--dur) var(--ease-out) backwards;
+}
+
+/* 推理：与步骤同一种行；展开后是一段带左侧细线的引文，底部留 10px，与 .tool-detail 的底部内边距一致。 */
+.reasoning[data-streaming] .tool-verb {
+  color: var(--conv-ink);
+}
+
+.reasoning-body {
+  margin: 2px 6px 10px 31px;
+  padding: 0 0 0 12px;
+  border-left: 1px solid var(--conv-rule);
+  animation: fade-up var(--dur) var(--ease-out) backwards;
+}
+
+.reasoning-body .md {
+  color: var(--conv-ink-2);
+  font-size: 12.5px;
+  line-height: 20px;
+}
+
+.note {
+  padding: 6px 10px 7px;
+  background: var(--conv-hover);
+  color: var(--conv-ink-2);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.note--red {
+  background: var(--red-bg);
+  color: var(--red);
+}
+
+/* 文件变更与 +/− 行数：右栏的“文件变更”也在用，所以这里只引用全局色，不用对话区的角色。 */
+.file-change {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.file-change-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.file-path {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-2);
+  font-size: 11.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-stat {
+  display: inline-flex;
+  flex: none;
+  gap: 6px;
+  font-size: 11.5px;
+}
+
+.file-stat i,
+.tool-files i {
+  font-style: normal;
+}
+
+i[data-sign="add"] {
+  color: var(--green);
+}
+
+/* 为 0 与没上报的一侧根本不渲染（lib/diffstat.ts 的 shownDelta），所以这里的红色只会落在真实的删除行数上。 */
+i[data-sign="del"] {
+  color: var(--red);
+}
+
+/* ───────────────────────── 计划 ─────────────────────────
+ * 列表本身（.plan-list / .plan-mark）右栏的“进度”也在用，所以只引用全局色。 */
+
+.plan {
+  padding: 14px 16px 16px;
+  background: var(--conv-surface);
+  box-shadow: 0 0 0 1px var(--conv-hairline);
+}
+
+.plan-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  color: var(--text-2);
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.plan-count {
+  margin-left: auto;
+  color: var(--text-3);
+  font-weight: 400;
+}
+
+.plan-note {
+  margin: 0 0 10px;
+  color: var(--text-3);
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.plan-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.plan-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+/* 已完成：石墨色对勾 + 降一级的文字。不用朱砂（会与失败混淆），也不用删除线——它在中文上很细、落在半像素位置时会时有时无。 */
+.plan-list li[data-status="completed"] {
+  color: var(--text-3);
+}
+
+.plan-list li[data-status="pending"] {
+  color: var(--text-2);
+}
+
+.plan-mark {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  margin-top: 3px;
+  box-shadow: inset 0 0 0 1px var(--text-4);
+  color: var(--ink);
+}
+
+.plan-list li[data-status="completed"] .plan-mark {
+  background: var(--text-3);
+  box-shadow: none;
+}
+
+.plan-list li[data-status="in_progress"] .plan-mark {
+  box-shadow: none;
+}
+
+.plan-list--side {
+  margin-top: 12px;
+}
+
+.plan-list--side li {
+  font-size: 12.5px;
+}
+
+/* ───────────────────────── 诊断与运行分隔 ───────────────────────── */
+
+.diag {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--conv-ink-3);
+  font-size: 12.5px;
+  line-height: 20px;
+}
+
+.diag > svg {
+  flex: none;
+  margin-top: 3px;
+}
+
+.diag > .row-time {
+  margin-top: 2px;
+}
+
+/* 提示（info）只是一行字；警告与错误才有底色。 */
+.diag[data-level="warn"],
+.diag[data-level="error"] {
+  padding: 8px 12px 9px;
+}
+
+.diag[data-level="warn"] {
+  background: var(--conv-warn-tint);
+  color: var(--conv-warn);
+}
+
+.diag[data-level="error"] {
+  background: var(--conv-danger-tint);
+  color: var(--conv-danger);
+}
+
+.diag-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.diag-head {
+  color: var(--conv-ink);
+  font-weight: 500;
+}
+
+.diag-text {
+  color: var(--conv-ink-2);
+}
+
+.run-marker {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--conv-ink-3);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.run-line {
+  flex: 1;
+  height: 1px;
+  background: var(--conv-hairline);
+}
+
+.run-label {
+  max-width: 80%;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.run-marker[data-phase="failed"] .run-label {
+  color: var(--conv-danger);
+}
+
+.run-marker[data-phase="cancelled"] .run-label {
+  color: var(--conv-warn);
+}
+
+/* ───────────────────────── 实时状态行 ───────────────────────── */
+
+.live-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 24px;
+  color: var(--conv-ink-2);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.live-line[data-waiting] {
+  color: var(--conv-ink-3);
+}
+
+.live-text {
+  min-width: 0;
+  white-space: nowrap;
+  animation: fade-in var(--dur) var(--ease-out) backwards;
+}
+
+.live-clock {
+  margin-left: auto;
+  color: var(--conv-ink-3);
+  font-size: 12px;
+}

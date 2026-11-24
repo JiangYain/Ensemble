@@ -1,0 +1,30 @@
+/*
+ * 品牌标识色层（2026-11-15 起）。
+ * 从 ModelMark / HarnessMark 两个组件导入（任一加载即全局生效），不排进 main.tsx 的层叠序列；
+ * 每条选择器都精确到 data-family 或 Git 卡片头部，特异性高于被覆盖的单类规则，不改其他文件的版式。
+ * 只做三件事：
+ *   1. 有官方品牌色的模型家族标铺各自可核实的原生色；官方标是渐变的按官方渐变铺（界面再现，非官方文件）。
+ *   2. Git 卡片头部的标识图标用官方橙（git-scm.com 官方 logo 文件的 fill 值 #F03C2E，Pantone 1788C）。
+ *   3. 官方只有黑白标、也没有可核实品牌彩的家族（openai / grok / kimi / composer）不在此上任何颜色，
+ *      保持 scene.css 的中性墨色——黑白就是这些品牌的真实标，不用颜色冒充品牌。
+ * 色值来源、核实方式与例外清单见 marks/README.md 与 public/licenses/MODEL-MARKS.md；
+ * 图标的大小、对齐与阅读层级全部沿用 scene.css / sidebar.css / model-pick.css 的现有规则，这里只改颜色。
+ */
+
+/* 官方标即该色的：铺官方标色。 */
+.model-mark[data-family="claude"] { background: #D97757; } /* Anthropic 官方品牌指南的 Clay 橙 */
+.model-mark[data-family="deepseek"] { background: #4D6BFE; } /* DeepSeek 官方标的蓝 */
+.model-mark[data-family="qwen"] { background: #615CED; } /* Qwen 官方标的主紫 */
+
+/* 官方标是渐变的：按官方渐变铺，属于官方渐变的界面再现，不是官方彩标文件。 */
+.model-mark[data-family="gemini"] { background: linear-gradient(135deg, #4285F4, #9B72CB 50%, #D96570); }
+.model-mark[data-family="llama"] { background: linear-gradient(135deg, #0081FB, #0064E0); }
+.model-mark[data-family="mistral"] { background: linear-gradient(180deg, #FFD700 0%, #FFAF00 25%, #FF8205 50%, #FA500F 75%, #E10500 100%); }
+.model-mark[data-family="minimax"] { background: linear-gradient(90deg, #E2167F, #FF623A); }
+
+/* 例外：官方标本身是深灰黑白标（Z glyph），这里铺的是从 z.ai 官方界面核实的品牌蓝——界面色，不是官方彩标。 */
+.model-mark[data-family="glm"] { background: #1F63EC; }
+
+/* Git：官方橙（官方 logo SVG 的 fill）。作用于 Git 卡片头部与单空间编辑部标头的 Git 图标，不染同一行的其他图标。 */
+.node.git .o-head .a-mark { color: #F03C2E; }
+.ws-ctx-git-mark { color: #F03C2E; }

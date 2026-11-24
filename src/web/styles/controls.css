@@ -1,0 +1,577 @@
+/* 通用部件（二）：分段控件、提示 / 菜单 / 通知、表单、分区与键值。光学约定见 components.css 开头。 */
+
+/* ───────────────────────── 分段控件 ───────────────────────── */
+
+/* 外框与按钮都是直角：2px 的内边距把按钮从外框里托出来，选中的按钮是外框里的一块实色。 */
+.segmented {
+  display: inline-flex;
+  flex: none;
+  gap: 2px;
+  padding: 2px;
+  background: rgba(0, 0, 0, 0.24);
+}
+
+.segmented button {
+  height: 26px;
+  padding: 0 11px 2px;
+  color: var(--text-3);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+
+.segmented button:hover:not(:disabled):not([data-active]) {
+  color: var(--text);
+}
+
+.segmented button[data-active] {
+  background: #484848;
+  color: var(--text);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.segmented button:disabled {
+  color: var(--text-4);
+}
+
+/* ───────────────────────── 提示 / 菜单 / 通知 ───────────────────────── */
+
+.tip {
+  position: fixed;
+  z-index: var(--z-tip);
+  max-width: 340px;
+  padding: 7px 10px 8px;
+  background: #161616;
+  box-shadow: 0 0 0 1px var(--line-strong), var(--shadow-pop);
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(3px);
+  transition: opacity 0.14s var(--ease-out), transform 0.14s var(--ease-out);
+}
+
+.tip[data-ready] {
+  opacity: 1;
+  transform: none;
+}
+
+.menu {
+  position: fixed;
+  z-index: var(--z-menu);
+  min-width: 224px;
+  /* 宿主侧栏窄到 320px 时，菜单也不能比视口宽。 */
+  max-width: min(320px, calc(100vw - 16px));
+  /* 弹层把 max-height 限制在视口之内（矮窗口）时，由菜单自己内部滚动，不被截断。 */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 5px;
+  background: #2f2f2f;
+  box-shadow: 0 0 0 1px var(--line-strong), var(--shadow-pop);
+  opacity: 0;
+  transform: translateY(-4px) scale(0.98);
+  transform-origin: top right;
+  transition: opacity 0.14s var(--ease-out), transform 0.16s var(--ease-out);
+}
+
+.menu[data-ready] {
+  opacity: 1;
+  transform: none;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 34px;
+  padding: 0 11px 2px;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+
+.menu-item svg {
+  flex: none;
+  color: var(--text-3);
+}
+
+.menu-item:hover,
+.menu-item:focus-visible {
+  background: var(--soft-hover);
+  outline: none;
+}
+
+.menu-item[data-danger] {
+  color: var(--red);
+}
+
+.menu-item[data-danger] svg {
+  color: inherit;
+}
+
+.menu-item[data-danger]:hover,
+.menu-item[data-danger]:focus-visible {
+  background: var(--red-bg);
+}
+
+.menu-item[aria-disabled="true"] {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.menu-item[aria-disabled="true"]:hover {
+  background: transparent;
+}
+
+.menu-icon-gap {
+  flex: none;
+  width: 15px;
+}
+
+.menu-sep {
+  height: 1px;
+  margin: 5px 4px;
+  background: var(--line);
+}
+
+.menu-item > span:not(.menu-icon-gap) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 分组标题：不可操作，比菜单项小一档、淡一档；它下面的项属于这一组。 */
+.menu-label {
+  padding: 6px 11px 4px;
+  color: var(--text-3);
+  font-size: 11px;
+  line-height: 1.3;
+  user-select: none;
+}
+
+.menu-sep + [role="group"] > .menu-label {
+  padding-top: 2px;
+}
+
+/* 一行紧凑的图标项（对齐、分布、撤销与重做）：悬停、聚焦、不可用都沿用 .menu-item，这里只收窄尺寸。 */
+.menu-row {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  padding: 1px 2px;
+}
+
+.menu-item[data-compact] {
+  flex: none;
+  justify-content: center;
+  gap: 0;
+  width: 32px;
+  height: 30px;
+  padding: 0;
+}
+
+.menu-item[data-compact] svg {
+  color: var(--text-2);
+}
+
+.menu-vsep {
+  flex: none;
+  width: 1px;
+  height: 16px;
+  margin: 0 4px;
+  background: var(--line-strong);
+}
+
+.toasts {
+  position: fixed;
+  z-index: var(--z-toast);
+  right: 18px;
+  bottom: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  max-width: 440px;
+  padding: 8px 9px 9px 14px;
+  background: #313131;
+  box-shadow: 0 0 0 1px var(--line-strong), var(--shadow-pop);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.45;
+  pointer-events: auto;
+  animation: toast-in 0.34s var(--ease-spring) both;
+}
+
+.toast > svg {
+  flex: none;
+}
+
+.toast[data-tone="success"] > svg {
+  color: var(--teal);
+}
+
+.toast[data-tone="warn"] > svg {
+  color: var(--amber);
+}
+
+.toast[data-tone="error"] > svg {
+  color: var(--red);
+}
+
+.toast[data-tone="info"] > svg {
+  color: var(--blue);
+}
+
+.toast-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* ───────────────────────── 表单 ───────────────────────── */
+
+.field-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 9px 12px 10px;
+  background: var(--soft);
+  color: var(--text-2);
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+.field-note > svg {
+  flex: none;
+  margin-top: 3px;
+}
+
+.field-note .chip {
+  vertical-align: 1px;
+}
+
+.field-note .link-btn {
+  margin-left: 10px;
+}
+
+.field-note--amber,
+.field-note[data-tone="advisory"] {
+  background: var(--amber-bg);
+  color: var(--amber);
+}
+
+.field-note[data-tone="enforced"] {
+  background: var(--teal-bg);
+  color: var(--text-2);
+}
+
+.field-note[data-tone="enforced"] > svg {
+  color: var(--teal);
+}
+
+.field-note[data-tone="advisory"],
+.field-note[data-tone="none"] {
+  color: var(--text-2);
+}
+
+.field-note[data-tone="advisory"] > svg {
+  color: var(--amber);
+}
+
+.field-note[data-tone="none"] > svg {
+  color: var(--text-3);
+}
+
+.input {
+  width: 100%;
+  height: 36px;
+  padding: 0 12px 2px;
+  background: var(--inset-deep);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--text);
+  font-size: 13px;
+  transition: box-shadow var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out);
+}
+
+.input::placeholder {
+  color: var(--text-4);
+}
+
+.input:hover:not(:disabled) {
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+}
+
+.input:focus {
+  box-shadow: inset 0 0 0 1px rgba(126, 211, 201, 0.6), 0 0 0 3px rgba(126, 211, 201, 0.14);
+  outline: none;
+}
+
+.input:disabled {
+  opacity: 0.5;
+}
+
+.input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-wrap > svg {
+  position: absolute;
+  left: 12px;
+  color: var(--text-3);
+  pointer-events: none;
+}
+
+.input-wrap .input {
+  padding-left: 37px;
+}
+
+/* ───────────────────────── 分区与键值 ───────────────────────── */
+
+.section {
+  background: rgba(255, 255, 255, 0.032);
+  box-shadow: 0 0 0 1px var(--line);
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px 0 4px;
+}
+
+.section-toggle {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  height: 40px;
+  padding: 0 8px 2px;
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 570;
+  letter-spacing: 0.02em;
+  text-align: left;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.section-toggle:hover {
+  color: var(--text);
+}
+
+.section-chevron {
+  flex: none;
+  color: var(--text-3);
+  transition: transform var(--dur) var(--ease-out);
+}
+
+.section[data-open] .section-chevron {
+  transform: rotate(90deg);
+}
+
+.section-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.section-count {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 6px 1px;
+  background: var(--soft);
+  color: var(--text-3);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.section-action {
+  display: inline-flex;
+  align-items: center;
+}
+
+.section-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 2px 14px 14px;
+  animation: fade-up 0.24s var(--ease-out) both;
+}
+
+.kvs {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  margin: 0;
+}
+
+.kvs--tight {
+  gap: 8px;
+}
+
+.kv {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  gap: 10px;
+  align-items: baseline;
+}
+
+.kvs--tight .kv {
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: 8px;
+}
+
+.kv dt {
+  color: var(--text-3);
+  font-size: 12px;
+}
+
+.kv dd {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  margin: 0;
+  color: var(--text);
+  font-size: 12.5px;
+  overflow-wrap: anywhere;
+}
+
+.inline {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+/* 值只占一行：标签、徽标、复制按钮保持原尺寸，只有路径 / 标识符这一段让出空间并省略。 */
+.inline--nowrap {
+  flex-wrap: nowrap;
+}
+
+.inline--nowrap > * {
+  flex: none;
+}
+
+/* 路径 / 标识符和同一栏的其他值用同一种界面字体（比例字体）。
+   max-width 既是 CSS 的上限，也是 useFit 量字符数时读取的“可用宽度”（见 bits.tsx），所以只在这里写一遍：
+   25px = 复制按钮 22px + 间距 6px − 左侧回收的 3px。
+   发生省略时，文字已经被精确排到刚好放得下的字符数，不足一个字符的零头留在文字末尾；
+   这时让这个元素占满可用宽度，几行的复制按钮就落在同一条竖线上。 */
+.inline--nowrap > .kv-path {
+  flex: 0 1 auto;
+  max-width: calc(100cqw - 25px);
+}
+
+.inline--nowrap > .kv-path[data-clipped] {
+  flex: none;
+  width: calc(100cqw - 25px);
+}
+
+/* 值列很窄时，“Cursor Agent”这类前缀标签会把标识符挤得只剩一两个字符，而它和上一行“执行端”本来就重复；
+   所以只在这一行宽到能同时放下标签和一段有辨识度的标识符时才显示，否则隐藏，标签仍在悬停提示里。 */
+.inline--nowrap {
+  container-type: inline-size;
+}
+
+.inline--nowrap > .kv-sub-inline {
+  display: none;
+  white-space: nowrap;
+}
+
+@container (min-width: 260px) {
+  .inline--nowrap > .kv-sub-inline {
+    display: inline;
+  }
+}
+
+/* 复制按钮的点击区（22px）比一行文字高：用负外边距让它不撑高这一行，保持各行间距一致；
+   左侧再收 3px，抵消图标四周的内边距，使图标与文字的视觉间距接近一个字距。 */
+.inline--nowrap > .icon-btn {
+  margin-block: -1.5px;
+  margin-left: -3px;
+}
+
+/* 徽标（20px）同理，不比旁边的文字行（19px）多撑出 1px。 */
+.inline--nowrap > .chip {
+  margin-block: -0.5px;
+}
+
+/* 字体、字号、颜色都沿用 .kv dd（和“模型”那一行一致），这里只负责单行；省略由 useFit 按字符数精确排好。
+   overflow: hidden 只是兜底（例如量出来的宽度和真实排版差了零点几个像素）。 */
+.kv-path {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.mid-text,
+.path-text {
+  display: flex;
+}
+
+.mid-head,
+.mid-tail,
+.path-shown {
+  flex: none;
+}
+
+/* 被省略的那一段还在 DOM 里，只是宽度为 0：选中、复制得到的仍是完整原文。 */
+.fit-hidden {
+  flex: none;
+  width: 0;
+  overflow: hidden;
+}
+
+/* “…”不是文本内容，用伪元素补上：标识符补在尾部前面（头 … 尾），路径补在可见部分前面（… 尾）。 */
+.mid-text[data-clipped] .mid-tail::before,
+.path-text[data-clipped] .path-shown::before {
+  content: "…";
+}
+
+.kv-sub,
+.kv-sub-inline {
+  color: var(--text-3);
+  font-size: 11.5px;
+}
+
+.kv-sub {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.link-btn[class*="clamp"],
+.clamp .link-btn {
+  margin-top: 6px;
+}
+
+.clamp-body {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

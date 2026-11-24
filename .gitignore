@@ -1,0 +1,10 @@
+node_modules/
+.DS_Store
+Thumbs.db
+*.log
+.env
+.env.*
+coverage/
+.vite/
+.tmp/
+# dist/ 是插件的可运行产物，需要随仓库提交（插件安装时不会执行构建）。

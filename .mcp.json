@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "ensemble": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/dist/ensemble.mjs", "mcp"]
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "ensemble",
+  "version": "0.1.0",
+  "description": "把工作委派给完整的 Cursor、Codex、Pi、Claude Code、OpenCode、DSH 等 Harness 会话，并在网页里实时观察、纠偏与接管。",
+  "author": { "name": "Chord" },
+  "homepage": "https://github.com/JiangYain/Ensemble",
+  "repository": "https://github.com/JiangYain/Ensemble",
+  "license": "MIT",
+  "keywords": ["delegation", "sub-agent", "harness", "cursor", "codex", "pi", "claude", "mcp", "orchestration"],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Ensemble",
+        "shortDescription": "委派给 Cursor / Pi / Codex / Claude Code / OpenCode / DSH 会话并观察、纠偏",
+        "longDescription": "Ensemble 让当前 Agent 把任务派给完整的外部 Harness 会话（Cursor、Codex、Pi、Claude Code、OpenCode、DSH），后台持续收集真实执行事件，并在 localhost 页面中展示每个被委派会话收到的任务、使用的模型、正在执行的步骤和消息；你可以随时直接向子会话发送纠正或停止它。",
+        "developerName": "Ensemble",
+        "category": "Developer Tools",
+        "capabilities": ["Read", "Write"],
+        "defaultPrompt": [
+          "用 Ensemble 把这个重构任务同时派给 Cursor 和 Pi，各自独立完成后对比结果。",
+          "用 Ensemble 让 Pi 只读调研这个模块的调用关系，并打开面板让我观察。"
+        ],
+        "brandColor": "#2d2d2d",
+        "composerIcon": "./assets/icon.svg",
+        "logo": "./assets/logo.svg"
+      }
+    }
+  }
+}

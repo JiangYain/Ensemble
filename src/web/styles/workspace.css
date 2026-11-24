@@ -1,0 +1,851 @@
+/* Editorial workspace shell: collapsible Main Agent rail (a lone icon-only expand button once collapsed),
+   top bar for narrow hosts, single-row workspace context header (Git & Folder metadata), 32px blueprint scale HUD
+   matched 1:1 with the multi-select bar, and compact session list. The ⌘K quick switcher lives in quick-switcher.css. */
+
+/* ───────────────────────── 应用骨架（AppShell） ───────────────────────── */
+
+.shell-main {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* ───────────────────────── 宽屏左侧栏（WorkspaceRail） ───────────────────────── */
+
+.rail-panel {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  width: 240px;
+  height: 100%;
+  border-right: 1px solid var(--line);
+  background: var(--bg-deep);
+  color: var(--text);
+  user-select: none;
+}
+
+/*
+ * 品牌区底部不画分隔线。height 按 border-box 计：原先的底边线占着这 50px 里的最后 1px（内容区 49px）；
+ * 去线后把这 1px 留作底部内边距，内容区仍是 49px——总高保持 50px，字样与收起按钮的垂直位置与去线前一致。
+ */
+.rail-brand {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  height: 50px;
+  padding: 0 12px 1px 16px;
+}
+
+.rail-logo {
+  padding: 2px 0;
+  color: var(--text);
+  font-family: var(--serif);
+  font-size: 21px;
+  font-weight: 600;
+  font-style: italic;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+.rail-logo:hover { color: var(--teal); }
+
+.rail-ico-btn {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  color: var(--text-3);
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.rail-ico-btn:hover { background: var(--soft-hover); color: var(--text); }
+.rail-ico-btn:active { background: var(--soft-press); }
+
+.rail-nav {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/*
+ * 侧栏的行一律通栏：容器不留左右内边距，行自己带 16px 的水平内边距，文字轴与品牌字样（.rail-brand 的 16px）同在一条线上；
+ * 悬停与选中是铺满栏宽的实色块，边缘就是栏的发丝线，不是飘在栏里的小方块。纵向按 4px 网格：
+ * 标题与副标题的行高写成整数像素（16 / 14），行与行之间不再留缝（原先 2px 的缝换成了行内上下各多出的 1px 内边距，行距不变）。
+ * 通栏的行贴着容器边，焦点环向内画（-2px）：向外的 2px 会被 .rail-scroll 的 overflow 裁掉。
+ */
+.rail-views {
+  flex: none;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.rail-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 8px 0 12px;
+}
+
+.rail-section + .rail-section {
+  margin-top: 12px;
+}
+
+.rail-section-label,
+.rail-section-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 4px 16px;
+  color: var(--text-4);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  text-align: left;
+}
+.rail-section-toggle {
+  transition: color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+}
+.rail-section-toggle:hover { background: var(--soft); color: var(--text-2); }
+.rail-section-toggle:focus-visible,
+.rail-item:focus-visible,
+.rail-sibling:focus-visible { outline-offset: -2px; }
+
+/* 纯净无竖条、无描边选中态：极柔和中性灰的通栏实底。 */
+.rail-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: 8px 16px;
+  color: var(--text-2);
+  text-align: left;
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.rail-item:hover { background: rgba(17, 17, 17, 0.038); color: var(--text); }
+.rail-item[data-active] {
+  background: rgba(17, 17, 17, 0.072);
+  color: var(--text);
+}
+.rail-item--view {
+  padding-block: 6px;
+}
+
+.rail-item-top {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  width: 100%;
+}
+
+.rail-item-ico {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  color: var(--text-3);
+}
+.rail-item[data-active] .rail-item-ico { color: var(--text); }
+
+.rail-item-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rail-item[data-active] .rail-item-title { font-weight: 600; }
+
+.rail-item-badges {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+}
+
+.rail-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--teal);
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.rail-att {
+  display: inline-flex;
+  align-items: center;
+  color: var(--amber);
+}
+
+.rail-count {
+  color: var(--text-4);
+  font-size: 10.5px;
+}
+.rail-item[data-active] .rail-count { color: var(--text-3); }
+
+.rail-item-sub {
+  display: block;
+  overflow: hidden;
+  padding-left: 21px;
+  color: var(--text-4);
+  font-size: 10.5px;
+  line-height: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rail-item[data-active] .rail-item-sub { color: var(--text-3); }
+
+/*
+ * 聚焦页下展开的同空间兄弟会话。引导线落在父行图标的中线下（图标 16–30px，线在 22–23px），
+ * 兄弟行从引导线起通栏铺到栏边：悬停与选中的实色块直接贴着引导线，不再是悬在线旁边的小方块。
+ * 兄弟行的标记与文字从父行标题的轴线（37px）起，与父行对齐，而不是各缩进各的。
+ */
+.rail-siblings {
+  display: flex;
+  flex-direction: column;
+  margin: 4px 0 4px 22px;
+  border-left: 1px solid var(--line-strong);
+}
+
+.rail-sibling {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 4px 16px 4px 14px;
+  color: var(--text-3);
+  font-size: 11.5px;
+  line-height: 16px;
+  text-align: left;
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.rail-sibling:hover { background: var(--soft); color: var(--text); }
+.rail-sibling[data-active] { background: rgba(17, 17, 17, 0.068); color: var(--text); font-weight: 560; }
+
+/* 状态标记是 5×5 的实心方块，不是圆点（全站没有圆角）；各状态的颜色与运行中的呼吸沿用原样。 */
+.rail-sibling-dot {
+  flex: none;
+  width: 5px;
+  height: 5px;
+  background: #bdbdbd;
+}
+.rail-sibling-dot[data-phase="running"] { background: var(--teal); animation: breathe 2s ease-in-out infinite; }
+.rail-sibling-dot[data-phase="failed"],
+.rail-sibling-dot[data-phase="lost"] { background: var(--red); }
+.rail-sibling-dot[data-phase="ready"] { background: var(--text-3); }
+
+.rail-sibling-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rail-sibling--more {
+  color: var(--text-4);
+  font-size: 11px;
+}
+
+.rail-empty {
+  padding: 20px 16px;
+  color: var(--text-4);
+  font-size: 12px;
+  text-align: center;
+}
+
+/* 侧栏底栏：设置落地在这里，彻底替代底部浮空的 Dock。左缘 16px，与行文字、品牌字样同一条文字轴。 */
+.rail-foot {
+  flex: none;
+  padding: 12px 16px;
+  border-top: 1px solid var(--line);
+  background: var(--bg-deep);
+}
+
+.rail-foot-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rail-settings {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line-strong);
+  background: var(--bg);
+  color: var(--text-3);
+  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.rail-settings:hover { border-color: #c8c8c8; background: var(--soft); color: var(--text); }
+.rail-settings:active { background: var(--soft-press); }
+
+/* ───────────────────────── 窄屏顶栏（WorkspaceTopBar） ───────────────────────── */
+
+/* 只有窄屏（< 860px，没有侧栏）渲染它，是窄屏唯一的工作空间切换与设置入口；宽屏收起侧栏之后没有顶栏。 */
+
+.ws-topbar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  height: 44px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+  user-select: none;
+}
+
+.ws-topbar-left,
+.ws-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.ws-topbar-left { flex: 1; }
+.ws-topbar-right { flex: none; }
+
+.ws-topbar-brand {
+  flex: none;
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 600;
+  font-style: italic;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.ws-topbar-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  max-width: 280px;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--line-strong);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 500;
+  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+}
+.ws-topbar-switch:hover { border-color: #c4c4c4; background: var(--bg-deep); }
+
+.ws-topbar-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ws-topbar-chev {
+  flex: none;
+  color: var(--text-4);
+}
+
+/* 顶栏在场时（App 只在窄屏的概览页给 .app 加 data-topbar），画布上悬浮的标头上内边距固定为 12px；宽屏收起侧栏没有顶栏，保持标头自己的 14px。 */
+.app[data-topbar] .ws-head[data-mode="overlay"] {
+  padding-top: 12px;
+}
+
+/* ───────────────────────── 极简单行空间标头（WorkspaceHeader） ───────────────────────── */
+
+.ws-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-width: 0;
+}
+
+.ws-head[data-mode="overlay"] {
+  position: absolute;
+  z-index: var(--z-topbar);
+  top: 0;
+  right: 0;
+  left: 0;
+  padding: 14px 20px 12px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.96) 65%, rgba(255, 255, 255, 0));
+  pointer-events: none;
+}
+.ws-head[data-mode="overlay"] .ws-head-line,
+.ws-head[data-mode="overlay"] .ws-head-actions {
+  pointer-events: auto;
+}
+
+.ws-head[data-mode="flow"] {
+  flex: none;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+}
+
+/*
+ * 标头单行：28px 高，与右侧 28px 的控件组同心。行高与垂直居中由这一行自己保证（min-height + align-content: center），
+ * 不依赖任何一项的固定高度——主位置（.ws-ctx-primary）只是图标加文字，没有方块替它撑高。窄到折成两行时高度随内容增长。
+ */
+.ws-head-line {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: center;
+  align-content: center;
+  gap: 7px;
+  min-width: 0;
+  min-height: 28px;
+  color: var(--text-3);
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+/*
+ * 工作目录主位置：左上角第一项，只有图标和文字。它不是按钮（不可点，只有悬停提示），所以没有边框、底色和固定高度，也不加悬停或指针样式。
+ * 左缘就是标头内容区的左缘（.ws-head 的内边距），不另加缩进：与右侧控件组外缘到边的距离对称。
+ * 字号、字重与颜色层级沿用方块时期的写法。行高不再压成 1：1 的行高会让 .ws-ctx-folder 的 overflow: hidden 紧贴行框裁切，
+ * g / p / y 这类下伸笔画有被削掉的风险；这里继承标头行的 1.3（文字的中线不变，仍与图标在同一条水平轴上）。
+ */
+.ws-ctx-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: var(--text);
+  font-size: 12.5px;
+  font-weight: 550;
+}
+
+.ws-ctx-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.ws-ctx-ico { flex: none; color: var(--text-3); }
+.ws-ctx-folder {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text);
+  font-weight: 550;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ws-ctx-unknown { color: var(--text-4); font-weight: 450; }
+/* 分隔点画成 2×2 的方块（字符 "·" 是圆的）；28px 高的行里竖向居中正好落在整像素上。 */
+.ws-ctx-sep { flex: none; width: 2px; height: 2px; background: var(--line-strong); }
+
+.ws-ctx-git-mark { flex: none; }
+.ws-ctx-branch { color: var(--text-2); font-weight: 550; }
+.ws-ctx-sha { color: var(--text-4); font-size: 11px; }
+.ws-ctx-status { color: var(--text-3); }
+.ws-ctx-status[data-kind="attention"] { color: var(--teal); font-weight: 550; }
+.ws-ctx-sync { display: inline-flex; align-items: center; gap: 1px; color: var(--text-3); font-size: 11px; }
+.ws-ctx-stale { color: var(--text-4); }
+
+.ws-head-actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+}
+
+.ws-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 9px;
+  border: 1px solid var(--line-strong);
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--text-2);
+  font-size: 11.5px;
+  line-height: 1;
+  transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+}
+.ws-action-btn:hover { border-color: #bcbcbc; color: var(--text); }
+.ws-action-btn[data-active] {
+  border-color: color-mix(in srgb, var(--teal) 45%, var(--bg));
+  background: var(--teal-bg);
+  color: var(--teal);
+}
+
+.ws-filter-count {
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.ws-view-switch {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  border: 1px solid var(--line-strong);
+  background: rgba(255, 255, 255, 0.94);
+}
+
+.ws-view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 100%;
+  padding: 0 9px;
+  color: var(--text-3);
+  font-size: 11.5px;
+  line-height: 1;
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.ws-view-btn + .ws-view-btn {
+  border-left: 1px solid var(--line);
+}
+.ws-view-btn:hover { color: var(--text); }
+.ws-view-btn[data-active] {
+  background: var(--fill);
+  color: var(--ink);
+}
+
+/* ───────────────────────── 宽屏收起侧栏后的展开按钮（RailExpandButton） ───────────────────────── */
+
+/*
+ * 收起侧栏只带来横向的变化：没有顶栏、没有占位的条，页面的纵向几何与侧栏展开时一致；收起与展开也没有任何过渡动画。
+ * 留下的只有这一个只带图标的按钮：外观沿用 .rail-ico-btn（28×28，与侧栏头部的“收起”是同一个图标），浮在左上角。
+ *
+ * 横向各页一致：按钮左缘 12px，占 12–40px；各页标头第一行的内容让到 48px 起（与按钮隔 8px，和 .head-top 的 gap 同值）。
+ * 纵向与各页标头第一行的中线对齐（按钮 28px，top = 中线 − 14px），数字取自各标头现行的版式：
+ *   概览·画布 .ws-head[data-mode="overlay"]：上内边距 14px + 28px 一行，中线 28px → top 14px；
+ *   概览·列表 .ws-head[data-mode="flow"]：上内边距 12px + 28px 一行，中线 26px → top 12px；
+ *   聚焦页 .focus-head：上内边距 20px + .head-top 34px 一行，中线 37px → top 23px。
+ * 改动这些标头的上内边距或行高时，对应的 top 要一起改。
+ *
+ * 只对“宽屏且已收起”生效：App 在这种情形给 .app 写 data-rail="collapsed"；窄屏是 "none"（没有侧栏可展开，沿用顶栏），这些规则够不着它。
+ * 按钮渲染在 .app 里、.shell-main 之外，换页时是同一个元素；z-index 与标头同层（--z-topbar），低于弹层，弹层打开时随 data-modal-inert 一起 inert。
+ * 左上角没有别的绝对定位元素与它相撞：画布的边缘提示贴在各边中点（上边 left: 50%，左边 top: 50%），比例尺与对齐条在底部，连接状态提示在左下。
+ */
+.rail-expand {
+  position: absolute;
+  z-index: var(--z-topbar);
+  top: 14px;
+  left: 12px;
+}
+.app:has(.ws-head[data-mode="flow"]) .rail-expand { top: 12px; }
+.app[data-view="session"] .rail-expand { top: 23px; }
+
+/* 标头第一行为按钮让位。这是标头“左缘就是内边距”那条规则的唯一例外，右缘与其余内边距不变。 */
+.app[data-rail="collapsed"] .ws-head[data-mode="overlay"],
+.app[data-rail="collapsed"] .ws-head[data-mode="flow"] { padding-left: 48px; }
+.app[data-rail="collapsed"] .focus-head .head-top { margin-left: 20px; }
+
+/* ───────────────────────── 画布右下角图纸比例尺（CanvasScale） ───────────────────────── */
+/* 严格 32px 总高，与左侧底部多选对齐栏（.arrange）像素级等高、共底边、同边框同底色。 */
+
+.canvas-scale {
+  position: absolute;
+  z-index: var(--z-topbar);
+  right: 18px;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 2px;
+  border: 1px solid #dedede;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 1px 4px rgba(17, 17, 17, 0.04);
+  pointer-events: auto;
+}
+
+.scale-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  color: var(--text-3);
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.scale-btn:hover { background: var(--soft-hover); color: var(--text); }
+.scale-btn:active { background: var(--soft-press); }
+.scale-btn[data-active] { color: var(--teal); }
+
+.scale-value {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 28px;
+  padding: 0 4px;
+  color: var(--text-2);
+  font-size: 11px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.scale-sep {
+  width: 1px;
+  height: 14px;
+  margin: 0 2px;
+  background: var(--line-strong);
+}
+
+/* ───────────────────────── 紧凑列表视图（SessionList） ───────────────────────── */
+
+.list-stage {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--bg);
+  container-type: inline-size;
+}
+
+.scene[data-scoped] {
+  container-type: inline-size;
+}
+
+.list-scroll {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.slist {
+  display: flex;
+  flex-direction: column;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 6px 24px 36px;
+}
+
+.slist-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) minmax(0, 240px) auto 28px;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+  cursor: pointer;
+  /* 只过渡底色：工作中的氤氲（background-image）是静态的，不参与过渡，免得它在不同浏览器里时而淡入淡出、时而跳变。 */
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+/* 悬停只改底色，写 background-color 而不是 background 简写：简写会连带重置 background-image，把下面工作中的氤氲一并清掉。 */
+.slist-row:hover { background-color: var(--bg-deep); }
+
+/*
+ * 列表行不画左侧色条；视觉权重只有两处区别：
+ * · 工作中（running / starting / queued）：一层静态的极淡朱砂氤氲，自行首弥散开、渐隐到白，没有线、块或描边。
+ *   颜色与六档透明度（7 / 6.3 / 4.6 / 2.4 / 0.7 / 0，依次落在 0 / 20 / 40 / 60 / 80 / 100%）是画布节点旧写法（自左缘弥散的一层静态氤氲）的那一组：
+ *   峰值 7% 与 --teal-bg 同档（白底上约 #fcf2f1），按余弦缓动分档、首尾斜率为零。画布上的节点后来改成了整卡里缓慢漂移的两团氤氲（见 scene.css 里 .a-aura 上方的注释），
+ *   列表行没有跟着变，仍是静态的一层——列表要不要也流动留给用户定，在那之前这几条规则不动；只有几何按行适配：
+ *   圆心在行首中线；横向半径取 162px，即卡片的 66% × 246px（248 宽去掉 1px 边框的内边距盒）——整行最宽约 1110px，
+ *   照搬百分比会让一整行泛红；纵向仍是行高的 150%（行首的上下角保留约四分之三）。
+ *   画在 background-image 上，不占布局；悬停只改 background-color（见上），所以氤氲在悬停下仍在。
+ *   starting / queued 带“值得留意”时，画布上由琥珀线顶替氤氲；列表里没有琥珀线可顶替，仍保留氤氲，留意由 .a-flag 标记承载。
+ * · 已结束 / 已取消 / 已停止：正文退一档（下面的 opacity）。
+ * 值得留意与失败 / 丢失的行不加底色，信息本来就在行里：.a-flag 的琥珀标记、.slist-state 的朱砂状态文字。
+ * 失败 / 丢失的行也不套用氤氲：本主题里 --teal 与 --red 同为朱砂，工作中与失败不能靠色相区分。
+ */
+.slist-row[data-phase="running"],
+.slist-row[data-phase="starting"],
+.slist-row[data-phase="queued"] {
+  background-image: radial-gradient(
+    ellipse 162px 150% at 0 50%,
+    color-mix(in srgb, var(--teal) 7%, transparent),
+    color-mix(in srgb, var(--teal) 6.3%, transparent) 20%,
+    color-mix(in srgb, var(--teal) 4.6%, transparent) 40%,
+    color-mix(in srgb, var(--teal) 2.4%, transparent) 60%,
+    color-mix(in srgb, var(--teal) 0.7%, transparent) 80%,
+    transparent
+  );
+  background-repeat: no-repeat;
+}
+.slist-row[data-phase="done"] .slist-main,
+.slist-row[data-phase="cancelled"] .slist-main,
+.slist-row[data-phase="stopped"] .slist-main {
+  opacity: 0.84;
+}
+.slist-row:hover .slist-main { opacity: 1; }
+
+.slist-branch {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  width: 10px;
+  height: 1px;
+  background: var(--line-strong);
+}
+
+.slist-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.slist-main {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.slist-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.slist-title {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 560;
+  line-height: 1.3;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.slist-title:hover { color: var(--teal); }
+
+.slist-files {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 3px;
+  color: var(--text-3);
+  font-size: 10.5px;
+}
+
+.slist-sub {
+  overflow: hidden;
+  color: var(--text-3);
+  font-size: 11.5px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.slist-spec {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  max-width: 260px;
+  color: var(--text-3);
+  font-size: 11.5px;
+}
+
+.slist-harness {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-2);
+  font-weight: 500;
+}
+
+.slist-model {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.slist-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  min-width: 96px;
+}
+
+.slist-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-3);
+  font-size: 11.5px;
+  font-weight: 500;
+}
+.slist-state[data-kind="running"],
+.slist-state[data-kind="failed"],
+.slist-state[data-kind="lost"] { color: var(--teal); }
+
+.slist-time {
+  color: var(--text-4);
+  font-size: 10.5px;
+}
+
+.slist-menu { display: flex; justify-content: flex-end; }
+
+.slist-empty {
+  padding: 56px 24px;
+  color: var(--text-3);
+  font-size: 13px;
+  text-align: center;
+}
+
+.slist-empty-wrap {
+  position: relative;
+  min-height: 360px;
+  height: 100%;
+}
+
+/* ───────────────────────── 响应式（按主舞台实际容器宽度自适应，兼容宽屏开侧栏与宿主窄侧栏） ───────────────────────── */
+
+@container (max-width: 820px) {
+  .slist { padding: 4px 14px 24px; }
+  .slist-row {
+    grid-template-columns: 20px minmax(0, 1fr) auto 26px;
+    gap: 8px;
+    padding: 10px 8px;
+  }
+  .slist-spec { display: none; }
+  .slist-meta { min-width: 72px; }
+}
+
+@container (max-width: 680px) {
+  .ws-head[data-mode="overlay"],
+  .ws-head[data-mode="flow"] {
+    padding: 10px 14px;
+    gap: 10px;
+  }
+  .ws-action-label { display: none; }
+  .ws-action-btn,
+  .ws-view-btn { padding: 0 7px; }
+  .ws-ctx-sha { display: none; }
+}
+
+@media (max-width: 560px) {
+  .canvas-scale { right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); }
+}
+
+@media (max-width: 440px) {
+  .ws-topbar { padding: 0 8px; }
+  .ws-topbar-brand { display: none; }
+  .ws-topbar-switch { max-width: none; flex: 1; }
+  .scale-value { min-width: 34px; font-size: 10px; }
+}

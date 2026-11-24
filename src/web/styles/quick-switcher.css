@@ -1,0 +1,178 @@
+/* ⌘K / Ctrl+K 快速切换器（QuickSwitcher.tsx）：从 workspace.css 末尾拆出来的一段，那个文件因此只剩工作区自己的骨架、侧栏、顶栏、页头、比例尺与会话列表。
+   规则整块原样搬来，选择器与书写顺序都没动；在 main.tsx 里紧跟 workspace.css 引入，层叠位置与拆分前一致：
+   它后面原先只隔着 workspace.css 末尾的响应式断点（会话列表、页头、比例尺、窄屏顶栏），那几条都不涉及 `.switcher*`。 */
+
+/* ───────────────────────── 参考图 2 极简快速切换器（QuickSwitcher） ───────────────────────── */
+
+.switcher {
+  display: flex;
+  flex-direction: column;
+  min-height: 240px;
+  max-height: min(560px, 76vh);
+}
+
+.switcher-bar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 10px;
+  height: 52px;
+  padding: 0 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.switcher-scope-wrap {
+  position: relative;
+  flex: none;
+}
+
+.switcher-scope {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 30px;
+  padding: 0 10px 0 12px;
+  background: #f2f2f2;
+  color: #1f1f1f;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  transition: background var(--dur-fast) var(--ease-out);
+}
+.switcher-scope:hover { background: #e8e8e8; }
+
+.switcher-scope-menu {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 156px;
+  padding: 5px;
+  border: 1px solid #e8e8e8;
+  background: #fff;
+  box-shadow: var(--shadow-pop);
+}
+
+.switcher-scope-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  height: 30px;
+  padding: 0 10px;
+  color: var(--text-2);
+  font-size: 12.5px;
+  text-align: left;
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.switcher-scope-option:hover { background: var(--soft); color: var(--text); }
+.switcher-scope-option[data-active] { color: var(--text); font-weight: 560; }
+
+.switcher-scope-sep {
+  height: 1px;
+  margin: 4px 6px;
+  background: var(--line);
+}
+
+.switcher-input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.4;
+  outline: none;
+}
+.switcher-input::placeholder { color: #9a9a9a; }
+
+.switcher-filter-btn {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  color: var(--text-3);
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.switcher-filter-btn:hover { background: var(--soft); color: var(--text); }
+.switcher-filter-btn[data-active] { background: var(--teal-bg); color: var(--teal); }
+
+.switcher-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 6px 8px 10px;
+}
+
+.switcher-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  color: var(--text);
+  text-align: left;
+  transition: background var(--dur-fast) var(--ease-out);
+}
+.switcher-item[data-active] {
+  background: #f3f3f3;
+}
+
+.switcher-live-dot {
+  flex: none;
+}
+
+.switcher-primary {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  color: #171717;
+  font-size: 13.5px;
+  font-weight: 470;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.switcher-dir {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 4px;
+  max-width: 180px;
+  color: #8c8c8c;
+  font-size: 12.5px;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+.switcher-dir > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.switcher-dir-ico {
+  flex: none;
+  color: #9e9e9e;
+}
+
+.switcher-age {
+  flex: none;
+  margin-left: auto;
+  padding-left: 12px;
+  color: #8c8c8c;
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.switcher-empty {
+  padding: 36px 16px;
+  color: var(--text-4);
+  font-size: 13px;
+  text-align: center;
+}

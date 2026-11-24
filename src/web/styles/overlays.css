@@ -1,0 +1,595 @@
+/* 浮层：对话框、确认框、设置窗口；以及视图切换（共享元素过渡）。 */
+
+@keyframes backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.975);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ───────────────────────── 通用 ───────────────────────── */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.overlay-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(12, 12, 12, 0.58);
+  backdrop-filter: blur(3px);
+  animation: backdrop-in 0.22s var(--ease-out) both;
+}
+
+.overlay-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 560px);
+  max-height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--card);
+  box-shadow: 0 0 0 1px var(--line-strong), var(--shadow-pop);
+  animation: dialog-in 0.3s var(--ease-out) both;
+}
+
+.overlay-panel:focus {
+  outline: none;
+}
+
+/* 退出用关键帧而不是 transition：入场动画（animation … both）结束后停在终值，移除 animation 的同一次样式更新里 Chrome 不会从该终值起算过渡，面板会在一帧内直接消失。 */
+@keyframes backdrop-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes dialog-out {
+  to {
+    opacity: 0;
+    transform: translateY(6px) scale(0.985);
+  }
+}
+
+.overlay[data-closing] .overlay-backdrop {
+  animation: backdrop-out 0.16s var(--ease-out) both;
+}
+
+.overlay[data-closing] .overlay-panel {
+  animation: dialog-out 0.16s var(--ease-out) both;
+}
+
+/* ───────────────────────── 确认框 ───────────────────────── */
+
+.confirm {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 24px 24px 20px;
+}
+
+.confirm-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 8px;
+  background: var(--soft);
+  color: var(--text-2);
+}
+
+.confirm-icon[data-tone="danger"] {
+  background: var(--red-bg);
+  color: var(--red);
+}
+
+/* 竖向节奏以 4px 为基：内边距 24 / 20，图标块 40 + 16 → 标题行 28 + 8 → 说明（行高取整数 px：23 = 13.5 × 1.7）+ 24 → 按钮 32。
+   行高都用整数 px：面板高度因此是整数，不会把面板垫到半个像素上去（DPR 1 下边线会糊）。 */
+.confirm-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 580;
+  line-height: 28px;
+}
+
+.confirm-body {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 13.5px;
+  line-height: 23px;
+  overflow-wrap: anywhere;
+}
+
+.confirm-actions {
+  display: flex;
+  align-self: stretch;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+/* 一对按钮的宽度：“取消”两个字只有 55px 宽（32 : 55 ≈ 1 : 1.7，钝头方块），“删除记录”82px（1 : 2.55）。
+   两者落到同一个下限 84px（32 : 84 = 1 : 2.625，接近 1 : 1.618 的倒数 2.618），中文下恰好等宽；英文按文字自然撑开。 */
+.confirm-actions .btn {
+  min-width: 84px;
+}
+
+/* 默认聚焦的按钮（取消）：键盘进入时有完整的聚焦环（:focus-visible）；鼠标点开时不出环，
+   但 Enter 触发的就是它，所以留一圈很淡的内框作为“默认动作”的提示——不抢主次。 */
+.confirm-actions [data-autofocus]:focus:not(:focus-visible):not(:disabled) {
+  box-shadow: inset 0 0 0 1px rgba(17, 17, 17, 0.22);
+}
+
+/* ───────────────────────── 设置窗口 ───────────────────────── */
+
+/*
+ * 窗口宽 920（Modal 的 width；视口放不下时 .overlay-panel 自己收缩，两侧各留 .overlay 的边距），高 min(680px, 100vh − 64px)，固定不随内容伸缩：
+ * 各分区的内容多少不一，窗口跟着变高会在切换分区时跳动。左边 216 的导航，右边分区内容；两个标题行同高（64），所以窗口标题与分区标题落在同一条线上。
+ * 导航收成顶部一条的条件看窗口自己的宽度（container），不看视口：视口 720 时窗口仍有 ~700，导航还在左边，窗口 ≤ 600（视口约 650 以下）才收。
+ * 容器查询不能改容器自己，所以 .settings 只负责尺寸与容器，排布在里面的 .settings-frame 上。
+ *
+ * 版式只有直角、发丝线与留白，以一张 4px 的网格为准（大尺寸取 8 的倍数：导航 216、标题行 64、导航行 56、卡片头 64、分区头 40、模型行 32）：
+ *   - 线只有两档：框与窗口的骨架用 --line-strong，框里的分隔用 --line；相邻的块共用一条线，不叠成两条；层级不靠阴影、渐变、色底与圆角；
+ *   - 横向的轴有两个变量：--pad（行的左右内缩）与 --gutter（列间距），宽版都是 16。执行端卡片头与模型行共用同一组列：
+ *     徽标 40 ｜ 名称与说明（1fr）｜ 状态 --col-status（112）｜ 16 的箭头 / 默认模型的单选格。名称的左缘 = --pad + 40 + --gutter = 72，
+ *     带品牌标的模型名、设置提示的文字都落在这条轴上；没有品牌标的模型名落在 --pad + 24 = 40，分区标题、推理强度也在这条轴上；
+ *   - “选中 / 开启”只有两种写法：实心墨色块（勾选、档位、语言）；朱砂的 2px 竖线与方块（当前分区、默认模型）。
+ * 圆角：没有。全站都是直角（不再有圆角令牌可以归零），设置窗口不是特例，共用控件在这里只换版式、不用再压圆角。
+ */
+.settings {
+  --pad: 16px;
+  --gutter: 16px;
+  --col-status: 112px;
+  container-type: inline-size;
+  flex: none;
+  height: min(680px, calc(100vh - 64px));
+}
+
+/* 窗口外框是 Modal 的 .overlay-panel，在 .settings 的外面：用 :has 认出“里面装着设置窗口的那一个面板”，
+   Modal 不必加任何钩子，其他对话框不受影响。外框只留一条 1px 的线，不带通用面板的那层大阴影。 */
+.overlay-panel:has(> .settings) {
+  box-shadow: 0 0 0 1px var(--line-strong);
+}
+
+.settings-frame {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+}
+
+.settings-side {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  width: 216px;
+  min-height: 0;
+  border-right: 1px solid var(--line-strong);
+  background: var(--soft);
+}
+
+/* 字号、字体在 editorial.css（与确认框的标题同一组：衬线 22px）。 */
+.settings-title {
+  display: flex;
+  align-items: center;
+  flex: none;
+  height: 64px;
+  margin: 0;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--line-strong);
+}
+
+.settings-nav {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* 导航项是通栏的行（高 56，下沿一条线）：图标落在 24 的轴上，与上面的标题同一条左缘。 */
+.settings-tab {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 8px 24px 9px;
+  border-bottom: 1px solid var(--line-strong);
+  color: var(--text-2);
+  text-align: left;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+
+.settings-tab > svg {
+  flex: none;
+  color: var(--text-3);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.settings-tab:hover:not([data-active]) {
+  background: var(--soft);
+  color: var(--text);
+}
+
+.settings-tab:active:not([data-active]) {
+  background: var(--soft-hover);
+}
+
+/* 聚焦环画在行的里面：行是通栏的，画在外面会被窗口的边与相邻的行盖掉。 */
+.settings-tab:focus-visible {
+  outline-offset: -2px;
+}
+
+/* 选中：纯白的块（与右边的分区同色，行像是向分区敞开）加左缘 2px 的朱砂竖线，图标跟着文字转成墨色；
+   竖线与画布卡片、标签页选中用的是同一种“当前”写法。 */
+.settings-tab[data-active] {
+  background: var(--bg);
+  box-shadow: inset 2px 0 0 var(--teal);
+  color: var(--text);
+}
+
+.settings-tab[data-active] > svg {
+  color: var(--text);
+}
+
+.settings-tab-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.settings-tab-label {
+  font-size: 13.5px;
+  font-weight: 560;
+  line-height: 18px;
+}
+
+.settings-tab-sub {
+  overflow: hidden;
+  color: var(--text-3);
+  font-size: 11.5px;
+  line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settings-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.settings-head {
+  display: flex;
+  align-items: center;
+  flex: none;
+  gap: 4px;
+  height: 64px;
+  padding: 0 24px 0 32px;
+  border-bottom: 1px solid var(--line-strong);
+}
+
+.settings-head-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 580;
+  line-height: 20px;
+}
+
+/* 标题行里的图标按钮（刷新、关闭）：32 见方，与行高 64 同在 8 的网格上。行的右内缩取 24：32 的按钮里 15 的图标左右各让出 8.5，
+   图标的右缘因此落在正文的右内缩线（32）上，与下面表格的右缘对齐。 */
+.settings-head .icon-btn {
+  width: 32px;
+  height: 32px;
+}
+
+/* 正文四周留 32（顶上 24）：表格的框画在正文里面，不贴着窗口的线。 */
+.settings-body {
+  flex: 1;
+  min-height: 0;
+  padding: 24px 32px 32px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* 分区正文顶上的一句话（执行端分区的 harness.modelsIntro）。 */
+.settings-intro {
+  margin: 0 0 24px;
+  color: var(--text-3);
+  font-size: 12.5px;
+  line-height: 20px;
+}
+
+/*
+ * 设置项的版式：一张带框的表，一行一项——左边是名字和一句说明，右边是控件，行与行之间一条细线。以后的设置沿用这几个类，不再各写一套。
+ * 控件是分段控件时沿用 .segmented，这里换成直角：32 高、等宽的格子，选中的一格是实心墨色块（与勾选、档位同一种“开”）。
+ */
+.setting-list {
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 0 1px var(--line-strong);
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 16px var(--pad);
+}
+
+.setting-row + .setting-row {
+  border-top: 1px solid var(--line);
+}
+
+.setting-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.setting-label {
+  font-size: 13.5px;
+  font-weight: 560;
+  line-height: 20px;
+}
+
+.setting-note {
+  margin: 4px 0 0;
+  color: var(--text-3);
+  font-size: 12.5px;
+  line-height: 20px;
+}
+
+/* 底色在 editorial.css 里是灰的，这里换回白底、一圈线。 */
+.settings .setting-control {
+  gap: 0;
+  padding: 0;
+  background: var(--bg);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+}
+
+.settings .setting-control button {
+  min-width: 88px;
+  height: 32px;
+  padding: 0 16px 2px;
+  font-size: 12.5px;
+}
+
+.settings .setting-control button:hover:not(:disabled):not([data-active]) {
+  background: var(--soft);
+}
+
+/* 深底上的白字比同字号的深字略轻（500 → 480）。 */
+.settings .setting-control button[data-active] {
+  background: var(--fill);
+  box-shadow: none;
+  color: var(--ink);
+  font-weight: 480;
+}
+
+.settings .setting-control button:focus-visible {
+  outline-offset: -2px;
+}
+
+/*
+ * 设置窗口里的共用控件：components.css / controls.css 的基础规则一条不动，这里只在 .settings 里换成同一套版式（全站都是直角）。
+ * 标签是细线框的方块，没有色底；提示条是浅灰块，左缘一条 2px 的状态线（与画布卡片左缘同一种写法）；
+ * 分区的头是一行 40 高的表头，下沿一条线，不再是带框的盒子；输入框聚焦时是 2px 的朱砂内框，没有外晕。
+ */
+.settings .chip {
+  padding: 0 8px 1px;
+  background: none;
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+}
+
+.settings .chip[data-tone="teal"],
+.settings .chip[data-tone="amber"],
+.settings .chip[data-tone="red"],
+.settings .chip[data-tone="blue"],
+.settings .chip[data-tone="violet"] {
+  background: none;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 40%, var(--bg));
+}
+
+.settings .icon-btn--bare {
+  width: 24px;
+  height: 24px;
+}
+
+.settings .harness-tile:not([data-sim]) {
+  border-color: var(--line-strong);
+}
+
+.settings .section {
+  border-bottom: 0;
+}
+
+.settings .section-head {
+  padding: 0 var(--pad);
+}
+
+.settings .section-toggle {
+  gap: 8px;
+  padding: 0 0 2px;
+}
+
+.settings .section-toggle:focus-visible {
+  outline-offset: -2px;
+}
+
+/* 箭头图标是 13 宽（bits.tsx 里的 size），放进 16 的格子里：左 1 右 2，标题的左缘因此落在 --pad + 24。 */
+.settings .section-chevron {
+  margin: 0 2px 0 1px;
+}
+
+.settings .section-count {
+  height: 20px;
+  padding: 0 8px 1px;
+}
+
+/* 表头与内容之间一条线；分区正文自己不再留内边距，由各行各自带。 */
+.settings .section-body {
+  gap: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+
+/* 没有模型可勾选（目录为空，或设置文件读不出来）时，正文只有一句说明：与 .mcfg-note 同一条内缩线、同样的上下留白。 */
+.settings .section-body > .muted {
+  padding: 8px var(--pad) 12px;
+}
+
+.settings .field-note {
+  gap: 8px;
+  padding: 8px var(--pad) 9px;
+  background: var(--soft);
+  box-shadow: inset 2px 0 0 var(--text-4);
+  line-height: 20px;
+}
+
+.settings .field-note > svg {
+  margin: 3px 1px 0;
+}
+
+.settings .field-note--amber {
+  background: var(--soft);
+  box-shadow: inset 2px 0 0 var(--amber);
+  color: var(--text-2);
+}
+
+.settings .field-note--amber > svg {
+  color: var(--amber);
+}
+
+.settings .field-note + .field-note {
+  border-top: 1px solid var(--line);
+}
+
+.settings .input:focus {
+  box-shadow: inset 0 0 0 2px var(--teal);
+}
+
+/* 窗口 ≤ 600：宿主的窄侧栏。导航横过来排在标题下面，分区标题行并进标题行（只留操作与关闭），设置项改成上下排；
+   行的左右内缩与列间距由 16 收成 12，状态列不再占固定宽度（--col-status 取内容宽）。变量写在 .settings-frame 上：容器自己（.settings）改不了。 */
+@container (max-width: 600px) {
+  .settings-frame {
+    --pad: 12px;
+    --gutter: 12px;
+    --col-status: auto;
+    position: relative;
+    flex-direction: column;
+  }
+
+  .settings-side {
+    width: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--line-strong);
+    background: none;
+  }
+
+  .settings-title {
+    height: 56px;
+    padding: 0 16px;
+    border-bottom: 0;
+  }
+
+  .settings-nav {
+    flex-direction: row;
+    overflow: visible;
+  }
+
+  .settings-tab {
+    min-height: 40px;
+    padding: 0 16px 1px;
+    border-bottom: 0;
+  }
+
+  .settings-tab[data-active] {
+    box-shadow: inset 0 -2px 0 var(--teal);
+  }
+
+  .settings-tab-sub {
+    display: none;
+  }
+
+  .settings-head {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 56px;
+    padding: 0 8px 0 0;
+    border-bottom: 0;
+  }
+
+  .settings-head-title {
+    display: none;
+  }
+
+  .settings-body {
+    padding: 16px 16px 24px;
+  }
+
+  .setting-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}
+
+/* ───────────────────────── 视图切换（共享元素过渡） ───────────────────────── */
+
+::view-transition-group(root) {
+  animation-duration: 0.22s;
+  animation-timing-function: var(--ease-out);
+}
+
+::view-transition-group(session-card) {
+  animation-duration: 0.42s;
+  animation-timing-function: var(--ease-soft);
+}
+
+::view-transition-image-pair(session-card) {
+  isolation: auto;
+}
+
+::view-transition-old(session-card),
+::view-transition-new(session-card) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: left top;
+  mix-blend-mode: normal;
+  animation-duration: 0.3s;
+}
+
+@media (max-width: 720px) {
+  .overlay {
+    padding: 12px;
+  }
+
+  .topbar-stats {
+    display: none;
+  }
+}

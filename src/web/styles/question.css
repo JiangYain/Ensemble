@@ -1,0 +1,424 @@
+/* 执行端的提问卡片（components/QuestionCard.tsx）：问题原文、可选项、回答入口，回答之后原位变成只读的记录。
+ * 它在时间线里，用 timeline.css 里 .focus-main 定义的 --conv-* 角色色，所以必须紧跟 intervention.css 之后引入。
+ *
+ * 版式与全站一致：直角、发丝线、方块，没有投影、没有新的颜色。
+ *   · 选项前的标记是方框：单选里面一个实心小方块，多选里面一个对勾；
+ *   · 状态用方块的形状区分，不靠色相：空心 = 待回答，实心 = 已回答，带一道横线的空心 = 不回答，淡的空心 = 已过期；
+ *   · 待回答的卡片只是外框线深一档（等人的事要比历史显眼），不加色条。
+ * 间距取 4 / 8 / 12 / 16；卡片里的控件尺寸在发送中、出错时都不变，错误只占状态行。 */
+
+.question {
+  padding: 16px 16px 12px;
+  background: var(--conv-surface);
+  box-shadow: 0 0 0 1px var(--conv-hairline);
+  color: var(--conv-ink);
+}
+
+.question[data-status="open"] {
+  box-shadow: 0 0 0 1px var(--conv-rule);
+}
+
+/* 已经有了结局的提问只是历史：问题文字降一级。 */
+.question:not([data-status="open"]) .q-text {
+  color: var(--conv-ink-2);
+}
+
+/* ───────────────────────── 抬头 ───────────────────────── */
+
+.q-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 20px;
+  margin-bottom: 12px;
+  color: var(--conv-ink-3);
+  font-size: 12.5px;
+  line-height: 20px;
+}
+
+.q-title {
+  color: var(--conv-ink);
+  font-weight: 500;
+}
+
+.q-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--conv-ink-3);
+  white-space: nowrap;
+}
+
+.q-state[data-status="open"] {
+  color: var(--conv-ink);
+}
+
+/* 状态方块 8×8：空心是底（待回答），其余在它上面加东西。 */
+.q-pip {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  box-shadow: inset 0 0 0 1px currentColor;
+}
+
+.q-state[data-status="answered"] .q-pip {
+  background: currentColor;
+}
+
+.q-state[data-status="declined"] .q-pip {
+  background: linear-gradient(currentColor, currentColor) center / 4px 1px no-repeat;
+}
+
+.q-state[data-status="expired"] .q-pip {
+  opacity: 0.5;
+}
+
+.q-head .row-time {
+  margin-left: auto;
+}
+
+/* ───────────────────────── 问题 ───────────────────────── */
+
+.q-prompt + .q-prompt {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--conv-hairline);
+}
+
+.q-prompt-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+  color: var(--conv-ink-3);
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.q-header {
+  color: var(--conv-ink-2);
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+/* 问题原文逐字显示：保留换行，长词、长路径折行而不撑破卡片。 */
+.q-text {
+  margin: 0;
+  color: var(--conv-ink);
+  font-size: 13.5px;
+  line-height: var(--conv-lh);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.q-hint {
+  margin: 8px 0 0;
+  color: var(--conv-ink-3);
+  font-size: 12px;
+  line-height: 20px;
+}
+
+/* ───────────────────────── 可选项 ───────────────────────── */
+
+.q-options {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.q-opt {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 8px 12px;
+  box-shadow: inset 0 0 0 1px var(--conv-hairline);
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.q-opt:hover {
+  background: var(--conv-hover);
+}
+
+.q-opt[data-checked] {
+  background: var(--conv-hover);
+  box-shadow: inset 0 0 0 1px var(--conv-ink-3);
+}
+
+/* 键盘焦点：同输入框的聚焦样式（朱砂细环加一圈淡晕）。“其他”那一行里的文字框获得焦点时，整行亮环。 */
+.q-opt:has(input:focus-visible) {
+  box-shadow: 0 0 0 1px var(--conv-live), 0 0 0 4px color-mix(in srgb, var(--conv-live) 10%, transparent);
+}
+
+.q-opt:has(input:disabled) {
+  cursor: default;
+}
+
+/* 真正的单选 / 多选框盖在整行上、完全透明：点击、方向键、读屏都用它本身的语义，外观由 .q-mark 画。
+   不可见，但半径也显式写成 0：原生单选框自带 50% 的半径，源码里不写，零圆角守卫就看不见它（“其他”那一行的单选框也在 .q-opt 里）。 */
+.q-opt input[type="radio"],
+.q-opt input[type="checkbox"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border-radius: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+
+.q-mark {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  box-shadow: inset 0 0 0 1px var(--conv-faint);
+  color: var(--conv-surface);
+  transition: background-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.q-opt:hover .q-mark {
+  box-shadow: inset 0 0 0 1px var(--conv-ink-3);
+}
+
+.q-opt[data-checked] .q-mark {
+  box-shadow: inset 0 0 0 1px var(--conv-ink);
+}
+
+/* 单选：框里一个实心小方块（选中时从无到有）。 */
+.q-mark[data-kind="radio"]::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  background: var(--conv-ink);
+  transform: scale(0);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.q-opt[data-checked] .q-mark[data-kind="radio"]::after {
+  transform: none;
+}
+
+/* 多选：选中时整框填实，里面是对勾（对勾始终在 DOM 里，选中与否不改变内容的尺寸）。 */
+.q-mark[data-kind="box"] svg {
+  opacity: 0;
+}
+
+.q-opt[data-checked] .q-mark[data-kind="box"] {
+  background: var(--conv-ink);
+  box-shadow: none;
+}
+
+.q-opt[data-checked] .q-mark[data-kind="box"] svg {
+  opacity: 1;
+}
+
+.q-opt-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.q-opt-label {
+  color: var(--conv-ink);
+  font-size: 13px;
+  line-height: 20px;
+  overflow-wrap: anywhere;
+}
+
+.q-opt-desc {
+  color: var(--conv-ink-3);
+  font-size: 12px;
+  line-height: 20px;
+  overflow-wrap: anywhere;
+}
+
+/* “其他”：一个选项加一个文字框；方框与文字在左边的 label 里，文字框占满剩下的宽度。 */
+.q-opt--other {
+  align-items: center;
+  cursor: default;
+}
+
+.q-other-pick {
+  position: relative;
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.q-opt--other .q-mark {
+  margin-top: 0;
+}
+
+/* ───────────────────────── 文字输入 ───────────────────────── */
+
+.q-input {
+  display: block;
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  height: 28px;
+  padding: 0 8px 1px;
+  background: var(--conv-surface);
+  box-shadow: inset 0 0 0 1px var(--conv-hairline);
+  color: var(--conv-ink);
+  font-size: 13px;
+  transition: box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.q-input::placeholder {
+  color: var(--conv-ink-3);
+}
+
+.q-input:hover:not(:disabled) {
+  box-shadow: inset 0 0 0 1px var(--conv-rule);
+}
+
+.q-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 1px var(--conv-live), 0 0 0 4px color-mix(in srgb, var(--conv-live) 10%, transparent);
+}
+
+/* 在“其他”这一行里，亮环由整行承担，文字框自己只留一道细线。 */
+.q-opt--other .q-input:focus {
+  box-shadow: inset 0 0 0 1px var(--conv-ink-3);
+}
+
+.q-input:disabled {
+  opacity: 0.6;
+}
+
+/* 没有可选项时的自由文本：固定三行高，超出在框内滚动，不随输入长高（卡片的高度不跟着字数跳）。 */
+.q-input--area {
+  height: 80px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  line-height: 20px;
+  resize: none;
+}
+
+/* ───────────────────────── 待回答的操作行 ───────────────────────── */
+
+.q-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+/* 状态行（发送中 / 出错）：与按钮同高、同一行，按钮永远停在原处；放不下时才折到按钮下面。 */
+.q-status {
+  display: flex;
+  flex: 1 1 160px;
+  align-items: center;
+  min-width: 0;
+  min-height: 32px;
+  padding-left: 4px;
+  color: var(--conv-ink-3);
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.q-error,
+.q-sending {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.q-error {
+  color: var(--conv-danger);
+}
+
+.q-error > svg,
+.q-sending .spinner {
+  flex: none;
+  margin-top: 4px;
+}
+
+/* ───────────────────────── 有了结局 ───────────────────────── */
+
+.q-picks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.q-pick {
+  padding: 2px 8px 3px;
+  background: var(--conv-sunken);
+  color: var(--conv-ink);
+  font-size: 13px;
+  line-height: 20px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.q-foot--resolved {
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 12px;
+  color: var(--conv-ink-3);
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.q-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 8px;
+  margin: 0;
+}
+
+/* 分隔点画成 2×2 的方块（同 .msg-head）。 */
+.q-meta > * + *::before {
+  content: "";
+  display: inline-block;
+  width: 2px;
+  height: 2px;
+  margin-right: 8px;
+  vertical-align: middle;
+  background: var(--conv-faint);
+}
+
+.q-who {
+  color: var(--conv-ink-2);
+}
+
+.q-note {
+  margin: 0;
+  color: var(--conv-ink-2);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.q-note-key {
+  margin-right: 8px;
+  color: var(--conv-ink-3);
+}
+
+/* 面板变窄：内边距收一档。 */
+@container conv (max-width: 420px) {
+  .question {
+    padding: 12px 12px 8px;
+  }
+
+  .q-opt {
+    gap: 8px;
+    padding: 8px;
+  }
+}

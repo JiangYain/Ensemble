@@ -1,0 +1,274 @@
+/* 通用部件（三）：Markdown 渲染与预览块。
+ * 这些是通用部件，只引用全局色（--text、--line……），不依赖对话区自己的变量。
+ *
+ * 排印：正文 13.5px / 24px；块与块之间隔 12px（半行），标题前 20px、后 8px；
+ * 列表项之间 4px。代码与表格是“引用的材料”，字号降一档（12px / 12.5px），用细线而不是底色块区分。 */
+
+/* ───────────────────────── Markdown ───────────────────────── */
+
+.md {
+  color: var(--text);
+  font-size: 13.5px;
+  line-height: 24px;
+  overflow-wrap: anywhere;
+}
+
+.md > :first-child {
+  margin-top: 0;
+}
+
+.md > :last-child {
+  margin-bottom: 0;
+}
+
+.md p {
+  margin: 0 0 12px;
+}
+
+.md h3,
+.md h4,
+.md h5,
+.md h6 {
+  margin: 20px 0 8px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.md h3 {
+  font-size: 15px;
+}
+
+.md h4 {
+  font-size: 14px;
+}
+
+.md h5,
+.md h6 {
+  color: var(--text-2);
+  font-size: 13.5px;
+}
+
+.md ul,
+.md ol {
+  margin: 0 0 12px;
+  padding-left: 1.5em;
+}
+
+/* 无序列表的标记在每一层都是方块：浏览器默认第一层是实心圆、第二层是空心圆。 */
+.md ul {
+  list-style-type: square;
+}
+
+.md li {
+  margin: 4px 0;
+}
+
+.md li > ul,
+.md li > ol {
+  margin: 4px 0 2px;
+}
+
+.md li::marker {
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.md blockquote {
+  margin: 0 0 12px;
+  padding: 0 0 0 14px;
+  border-left: 2px solid var(--line-strong);
+  color: var(--text-2);
+}
+
+.md hr {
+  height: 1px;
+  margin: 20px 0;
+  border: 0;
+  background: var(--line);
+}
+
+/* 链接：墨色加下划线（朱砂留给“进行中”和焦点）；悬停时下划线变实。 */
+.md a {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
+  text-underline-offset: 3px;
+  transition: text-decoration-color var(--dur-fast) var(--ease-out);
+}
+
+.md a:hover {
+  text-decoration-color: currentColor;
+}
+
+.md code {
+  padding: 0.1em 0.4em 0.14em;
+  background: var(--soft-hover);
+  font-size: 0.88em;
+}
+
+.md del {
+  color: var(--text-3);
+}
+
+/* 代码块：顶上一条细线分隔的小标题（语言与复制），其余是代码。 */
+.md-code {
+  margin: 0 0 12px;
+  background: var(--inset-deep);
+  box-shadow: 0 0 0 1px var(--line);
+}
+
+.md-code figcaption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 30px;
+  padding: 0 6px 0 12px;
+  border-bottom: 1px solid var(--line);
+  color: var(--text-3);
+  font-size: 11.5px;
+}
+
+.md-code pre {
+  max-height: 380px;
+  margin: 0;
+  padding: 10px 0;
+  overflow: auto;
+  font-size: 12px;
+  line-height: 20px;
+  tab-size: 2;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.md-code code {
+  display: block;
+  min-width: 0;
+  padding: 0 14px;
+  background: none;
+  font-size: inherit;
+}
+
+/* 表格：只有横线（表头下一条稍深）。第一列贴着阅读列的左边，窄了整张表横向滚动，不挤压内容。 */
+.md-table {
+  margin: 0 0 12px;
+  overflow: auto;
+}
+
+.md table {
+  border-collapse: collapse;
+  min-width: 55%;
+  font-size: 12.5px;
+  line-height: 20px;
+}
+
+.md th,
+.md td {
+  padding: 7px 12px 8px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.md th:first-child,
+.md td:first-child {
+  padding-left: 0;
+}
+
+.md th:last-child,
+.md td:last-child {
+  padding-right: 0;
+}
+
+.md th {
+  border-bottom-color: var(--line-strong);
+  color: var(--text-2);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* 差异行：新增是中性的浅灰底，删除是浅红底；行首的 + / − 本身就是标记，不靠颜色区分。 */
+.md-diff-line {
+  display: block;
+  margin: 0 -14px;
+  padding: 0 14px;
+}
+
+.md-diff-line[data-kind="add"] {
+  background: var(--soft);
+  color: var(--text);
+}
+
+.md-diff-line[data-kind="del"] {
+  background: var(--red-bg);
+  color: var(--red);
+}
+
+.md-diff-line[data-kind="hunk"] {
+  color: var(--text-3);
+}
+
+/* 流式输出：末尾一个朱砂色的光标，表示还在写。 */
+.md[data-streaming] > :last-child::after {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 1.05em;
+  margin-left: 3px;
+  vertical-align: -0.18em;
+  background: var(--teal);
+  animation: caret 1s steps(1) infinite;
+}
+
+.md[data-streaming] > .md-code:last-child::after,
+.md[data-streaming] > .md-table:last-child::after {
+  display: none;
+}
+
+/* ───────────────────────── 预览块 ───────────────────────── */
+
+.preview {
+  background: var(--inset-deep);
+  box-shadow: 0 0 0 1px var(--line);
+}
+
+.preview-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 28px;
+  padding: 0 4px 0 12px;
+  border-bottom: 1px solid var(--line);
+  color: var(--text-3);
+  font-size: 11.5px;
+}
+
+.preview pre {
+  margin: 0;
+  padding: 9px 0;
+  overflow: auto;
+  color: var(--text-2);
+  font-size: 11.5px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  tab-size: 2;
+}
+
+.preview pre code {
+  display: block;
+  min-width: 0;
+  padding: 0 12px;
+}
+
+.preview .md-diff-line {
+  margin: 0 -12px;
+  padding: 0 12px;
+}
+
+.preview-note {
+  padding: 5px 12px 6px;
+  border-top: 1px solid var(--line);
+  background: var(--amber-bg);
+  color: var(--amber);
+  font-size: 11.5px;
+}

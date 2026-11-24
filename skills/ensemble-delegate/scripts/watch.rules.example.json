@@ -1,0 +1,35 @@
+{
+  "_comment": "Example project rules for `node watch.mjs --rules watch.rules.example.json`. Copy it and change it to what your own project cares about; nothing in it is checked unless you pass --rules. `commands` are tested against every shell command a watched session runs. `paths` are tested against every file the harness reports as changed, written relative to the session's working directory with forward slashes; a file outside the working directory keeps its absolute path, which is what the first path rule below relies on. `flags` defaults to i; g and y are not accepted. A hit is printed as an [ALERT] line with the message and the command or path.",
+  "commands": [
+    {
+      "match": "\\bgit\\s+(commit|stash(?!\\s+(list|show)\\b)|reset|checkout|clean|restore|rebase|merge|push|pull|switch|rm)\\b",
+      "message": "git command that changes the repository or its history"
+    },
+    {
+      "match": "((?<![\\w$])\\.env(\\.[a-z]+)?(?![\\w.])|(?<![\\w-])credentials(\\.json)?(?![\\w-])|auth\\.json|CURSOR_API_KEY|OPENAI_API_KEY|ANTHROPIC_API_KEY|cli-config\\.json)",
+      "message": "command mentions a credential-looking file or variable"
+    },
+    {
+      "match": "(taskkill[^;|\\n]*\\/IM\\s+\"?(node|chrome|msedge|cursor)|Stop-Process[^;|\\n]*-Name|Get-Process[^|\\n]*\\|\\s*Stop-Process|\\bkillall\\b|\\bpkill\\b)",
+      "message": "command kills processes by name, which can take down other people's work"
+    }
+  ],
+  "paths": [
+    {
+      "match": "^([A-Za-z]:/|/)",
+      "message": "changed a file outside the session's working directory"
+    },
+    {
+      "match": "(^|/)package-lock\\.json$",
+      "message": "changed package-lock.json"
+    },
+    {
+      "match": "^\\.github/workflows/",
+      "message": "changed a CI workflow"
+    },
+    {
+      "match": "(^|/)\\.env(\\.[a-z]+)?$",
+      "message": "changed an env file"
+    }
+  ]
+}

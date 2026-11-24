@@ -1,0 +1,1876 @@
+{
+  "cases": {
+    "7 个单卡 · 桌面 · 默认缩放上限": {
+      "hash": "2ba4b7c4beadc3f52fcaf03228c9533e436aa5c7aab042cef6cee29cb6cd9d6d",
+      "nodes": 8,
+      "edges": 7,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 808,
+        "h": 520
+      },
+      "grid": true,
+      "fitAll": false
+    },
+    "7 个单卡 · 桌面 · 缩放上限 0.5": {
+      "hash": "2ba4b7c4beadc3f52fcaf03228c9533e436aa5c7aab042cef6cee29cb6cd9d6d",
+      "nodes": 8,
+      "edges": 7,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 808,
+        "h": 520
+      },
+      "grid": true,
+      "fitAll": false
+    },
+    "7 个单卡 · 桌面 · 缩放上限 1.6": {
+      "hash": "2ba4b7c4beadc3f52fcaf03228c9533e436aa5c7aab042cef6cee29cb6cd9d6d",
+      "nodes": 8,
+      "edges": 7,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 808,
+        "h": 520
+      },
+      "grid": true,
+      "fitAll": false
+    },
+    "7 个单卡 · 宽屏 · 画 Folder 与 Git 卡": {
+      "hash": "2ba4b7c4beadc3f52fcaf03228c9533e436aa5c7aab042cef6cee29cb6cd9d6d",
+      "nodes": 8,
+      "edges": 7,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 808,
+        "h": 520
+      },
+      "grid": true,
+      "fitAll": false
+    },
+    "7 个单卡 · 窄区域（紧凑模式）": {
+      "hash": "2fdc836b3e4262ac82d1d9c2b698ab3f46b98a202be44fb1baeeac2ee93b7ca2",
+      "nodes": 8,
+      "edges": 7,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 440,
+        "h": 624
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "7 个单卡 · 不规划（经典排法）": {
+      "hash": "70d83dbd17a003c18e1b94bdee5fb98ced987e8375e5fe40bc9e52ffda7f71ca",
+      "nodes": 8,
+      "edges": 7,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 576,
+        "h": 928
+      },
+      "grid": false,
+      "fitAll": false
+    },
+    "7 个单卡 · 窗口很矮": {
+      "hash": "a92f56cda4c6b0aa0cb4f187afe18360de4364c12fdc796e11ff7978fba67813",
+      "nodes": 8,
+      "edges": 7,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1368,
+        "h": 248
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "7 个单卡 · 竖屏的窄窗口": {
+      "hash": "b4bb8edd6fee5bcb769afbc06b9d95b217e98c16126988767c4c5028c7749dce",
+      "nodes": 8,
+      "edges": 7,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 552,
+        "h": 928
+      },
+      "grid": false,
+      "fitAll": false
+    },
+    "24 个单卡 · 桌面 · 默认缩放上限": {
+      "hash": "4cd699aceabd11387f9b818e02f5812a575fe2da2e60d973a2aaffe640ee9eed",
+      "nodes": 25,
+      "edges": 24,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1368,
+        "h": 792
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "24 个单卡 · 桌面 · 缩放上限 0.5": {
+      "hash": "4cd699aceabd11387f9b818e02f5812a575fe2da2e60d973a2aaffe640ee9eed",
+      "nodes": 25,
+      "edges": 24,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1368,
+        "h": 792
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "24 个单卡 · 桌面 · 缩放上限 1.6": {
+      "hash": "4cd699aceabd11387f9b818e02f5812a575fe2da2e60d973a2aaffe640ee9eed",
+      "nodes": 25,
+      "edges": 24,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1368,
+        "h": 792
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "24 个单卡 · 宽屏 · 画 Folder 与 Git 卡": {
+      "hash": "1d0a8d428145df49769285b839510c753e07f351348c5aa6c0ef6ee592b12676",
+      "nodes": 25,
+      "edges": 24,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1368,
+        "h": 792
+      },
+      "grid": true,
+      "fitAll": false
+    },
+    "24 个单卡 · 窄区域（紧凑模式）": {
+      "hash": "2216b793ce00360d18bf483852b046a27b4b6d3fbae6e499083430823f264bcc",
+      "nodes": 25,
+      "edges": 24,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 672,
+        "h": 1136
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "24 个单卡 · 不规划（经典排法）": {
+      "hash": "c7674713fcf9225407616c25b9a6436a40d4e051f88a5e9cd0d778395aba6f48",
+      "nodes": 25,
+      "edges": 24,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 576,
+        "h": 3240
+      },
+      "grid": false,
+      "fitAll": false
+    },
+    "24 个单卡 · 窗口很矮": {
+      "hash": "f30118f5eb8313837c57e2386064155d733ae58c3579c42aa96dcae7bd6d5599",
+      "nodes": 25,
+      "edges": 24,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1928,
+        "h": 520
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "24 个单卡 · 竖屏的窄窗口": {
+      "hash": "4868eefe4b2d046a48dd140f81454f366435dec2b29c5dbfac103a6caf2d3394",
+      "nodes": 25,
+      "edges": 24,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 808,
+        "h": 1200
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "单卡加一棵深浅不一的子树 · 桌面 · 默认缩放上限": {
+      "hash": "07cabc03a6d84aa494d0ce522cb1f5498e903f84eaafeadce6fc0ff903ede5c8",
+      "nodes": 28,
+      "edges": 27,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1648,
+        "h": 792
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "单卡加一棵深浅不一的子树 · 桌面 · 缩放上限 0.5": {
+      "hash": "07cabc03a6d84aa494d0ce522cb1f5498e903f84eaafeadce6fc0ff903ede5c8",
+      "nodes": 28,
+      "edges": 27,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1648,
+        "h": 792
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "单卡加一棵深浅不一的子树 · 桌面 · 缩放上限 1.6": {
+      "hash": "07cabc03a6d84aa494d0ce522cb1f5498e903f84eaafeadce6fc0ff903ede5c8",
+      "nodes": 28,
+      "edges": 27,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1648,
+        "h": 792
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "单卡加一棵深浅不一的子树 · 宽屏 · 画 Folder 与 Git 卡": {
+      "hash": "5eeed0f5ee8a0a30dfece40e08946e1c53e58ababb652a9e1cd71cd8477e00ab",
+      "nodes": 28,
+      "edges": 27,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1648,
+        "h": 792
+      },
+      "grid": true,
+      "fitAll": false
+    },
+    "单卡加一棵深浅不一的子树 · 窄区域（紧凑模式）": {
+      "hash": "a08f318861a772fd3a480dfa6bea0995bcfd8cecc439dcfbe62b754905f91804",
+      "nodes": 28,
+      "edges": 27,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 904,
+        "h": 1136
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "单卡加一棵深浅不一的子树 · 不规划（经典排法）": {
+      "hash": "d963cbd91a574335eb3957b4168c7d849839efca9004774bff86d132dd7294b4",
+      "nodes": 28,
+      "edges": 27,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1644,
+        "h": 3240
+      },
+      "grid": false,
+      "fitAll": false
+    },
+    "单卡加一棵深浅不一的子树 · 窗口很矮": {
+      "hash": "475db2a8929b79865cc7936f23ca856c43fecc5dbd2d90cd7b7aa7ac517f9264",
+      "nodes": 28,
+      "edges": 27,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 2768,
+        "h": 520
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "单卡加一棵深浅不一的子树 · 竖屏的窄窗口": {
+      "hash": "613f13aaf32e422ddd283b07681bd7a04b40393e57228bcee73370249513fc97",
+      "nodes": 28,
+      "edges": 27,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1088,
+        "h": 1200
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "只有子树 · 桌面 · 默认缩放上限": {
+      "hash": "ce26e5c1f44417a8eb7268ee27823e29ac415435136907ec6731c7e9308c4bec",
+      "nodes": 29,
+      "edges": 28,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1648,
+        "h": 1064
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "只有子树 · 桌面 · 缩放上限 0.5": {
+      "hash": "ce26e5c1f44417a8eb7268ee27823e29ac415435136907ec6731c7e9308c4bec",
+      "nodes": 29,
+      "edges": 28,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1648,
+        "h": 1064
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "只有子树 · 桌面 · 缩放上限 1.6": {
+      "hash": "ce26e5c1f44417a8eb7268ee27823e29ac415435136907ec6731c7e9308c4bec",
+      "nodes": 29,
+      "edges": 28,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1648,
+        "h": 1064
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "只有子树 · 宽屏 · 画 Folder 与 Git 卡": {
+      "hash": "ce26e5c1f44417a8eb7268ee27823e29ac415435136907ec6731c7e9308c4bec",
+      "nodes": 29,
+      "edges": 28,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1648,
+        "h": 1064
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "只有子树 · 窄区域（紧凑模式）": {
+      "hash": "28aa36f91c53fd34b019255e67a1b8c6aca527547983e541d370ca1fef7cc34b",
+      "nodes": 29,
+      "edges": 28,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 904,
+        "h": 1648
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "只有子树 · 不规划（经典排法）": {
+      "hash": "79db5511d7d9f551b0717e3d9616b8cd641adef60aa0e45d8cae748e3c66ed02",
+      "nodes": 29,
+      "edges": 28,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1644,
+        "h": 2152
+      },
+      "grid": false,
+      "fitAll": false
+    },
+    "只有子树 · 窗口很矮": {
+      "hash": "b40785984b872f4aea483fac9b0126bf6ba05f369bfcb73050ec79cceb0534bb",
+      "nodes": 29,
+      "edges": 28,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 2768,
+        "h": 656
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "只有子树 · 竖屏的窄窗口": {
+      "hash": "0ac12f94da7447b64acf11cc338989d69fefd76292cb45c4dda7cd052487e4f8",
+      "nodes": 29,
+      "edges": 28,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1088,
+        "h": 1744
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "一棵很高的子树 · 桌面 · 默认缩放上限": {
+      "hash": "d6b28e4d658aa8fcd26d3b5910ccc54341096fd9ab6d61df980a098d49f712de",
+      "nodes": 12,
+      "edges": 11,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1088,
+        "h": 656
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "一棵很高的子树 · 桌面 · 缩放上限 0.5": {
+      "hash": "d6b28e4d658aa8fcd26d3b5910ccc54341096fd9ab6d61df980a098d49f712de",
+      "nodes": 12,
+      "edges": 11,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1088,
+        "h": 656
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "一棵很高的子树 · 桌面 · 缩放上限 1.6": {
+      "hash": "d6b28e4d658aa8fcd26d3b5910ccc54341096fd9ab6d61df980a098d49f712de",
+      "nodes": 12,
+      "edges": 11,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1088,
+        "h": 656
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "一棵很高的子树 · 宽屏 · 画 Folder 与 Git 卡": {
+      "hash": "e29705e5deb7e1852cee280358a37c9e7e828d43f493401f8601d704cad1c06d",
+      "nodes": 12,
+      "edges": 11,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1088,
+        "h": 656
+      },
+      "grid": true,
+      "fitAll": false
+    },
+    "一棵很高的子树 · 窄区域（紧凑模式）": {
+      "hash": "ba0fb177095631b5bbbf5238bcad3cb8a2fca8b1edbb085e0bfa77442df3f365",
+      "nodes": 12,
+      "edges": 11,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 672,
+        "h": 752
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "一棵很高的子树 · 不规划（经典排法）": {
+      "hash": "2e8fbdd45fc891002462b4c027f964ffd024ed102d1c7f47b6bdc2d4d195daa2",
+      "nodes": 12,
+      "edges": 11,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 940,
+        "h": 1336
+      },
+      "grid": false,
+      "fitAll": false
+    },
+    "一棵很高的子树 · 窗口很矮": {
+      "hash": "43c5a0703afbd60047db4b295c6b35796df87055238935eed992b1cfc61df498",
+      "nodes": 12,
+      "edges": 11,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1648,
+        "h": 384
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "一棵很高的子树 · 竖屏的窄窗口": {
+      "hash": "fe4ab27dee4a4e568c6f51e9799d7ca23cdb937a02b31ca27519ef6c2beece41",
+      "nodes": 12,
+      "edges": 11,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 808,
+        "h": 792
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "三个来源各 10 个单卡 · 桌面 · 默认缩放上限": {
+      "hash": "c72b75b1333075f4cf4572131faec5c4dd0c0a09a90bae5a935032c4595c4fe9",
+      "nodes": 33,
+      "edges": 30,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1648,
+        "h": 792
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "三个来源各 10 个单卡 · 桌面 · 缩放上限 0.5": {
+      "hash": "c72b75b1333075f4cf4572131faec5c4dd0c0a09a90bae5a935032c4595c4fe9",
+      "nodes": 33,
+      "edges": 30,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1648,
+        "h": 792
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "三个来源各 10 个单卡 · 桌面 · 缩放上限 1.6": {
+      "hash": "c72b75b1333075f4cf4572131faec5c4dd0c0a09a90bae5a935032c4595c4fe9",
+      "nodes": 33,
+      "edges": 30,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1648,
+        "h": 792
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "三个来源各 10 个单卡 · 宽屏 · 画 Folder 与 Git 卡": {
+      "hash": "edc30764a96d502348e5a9f4ab160a4b016a48ca12e00bf669dd28e928b073d1",
+      "nodes": 33,
+      "edges": 30,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1648,
+        "h": 792
+      },
+      "grid": true,
+      "fitAll": false
+    },
+    "三个来源各 10 个单卡 · 窄区域（紧凑模式）": {
+      "hash": "01ac2b829fceaefe4f4febc9ca4d4278dd281d05e0dd718fbd29a04f25574d4a",
+      "nodes": 33,
+      "edges": 30,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 672,
+        "h": 1392
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "三个来源各 10 个单卡 · 不规划（经典排法）": {
+      "hash": "c29d5957926516027b4cda3a0107d7e128d4b7a69ec53b94b3d6bafad8d16f4b",
+      "nodes": 33,
+      "edges": 30,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 576,
+        "h": 4120
+      },
+      "grid": false,
+      "fitAll": false
+    },
+    "三个来源各 10 个单卡 · 窗口很矮": {
+      "hash": "00473728e6884fd532b4a929bc2531d397119140469db2adc5fbd92f8ceee5bb",
+      "nodes": 33,
+      "edges": 30,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 2768,
+        "h": 520
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "三个来源各 10 个单卡 · 竖屏的窄窗口": {
+      "hash": "7646b9836eaea389ae229369fab0330af1c55e42a9d96c19c795c050f43973d7",
+      "nodes": 33,
+      "edges": 30,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 808,
+        "h": 1472
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "三个来源：只有单卡、只有子树、两者都有 · 桌面 · 默认缩放上限": {
+      "hash": "cf0321753ddf744555d93dfe2db78cf730ea2f1959401bd9071c226d81b40fc6",
+      "nodes": 49,
+      "edges": 46,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1928,
+        "h": 1336
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "三个来源：只有单卡、只有子树、两者都有 · 桌面 · 缩放上限 0.5": {
+      "hash": "cf0321753ddf744555d93dfe2db78cf730ea2f1959401bd9071c226d81b40fc6",
+      "nodes": 49,
+      "edges": 46,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1928,
+        "h": 1336
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "三个来源：只有单卡、只有子树、两者都有 · 桌面 · 缩放上限 1.6": {
+      "hash": "cf0321753ddf744555d93dfe2db78cf730ea2f1959401bd9071c226d81b40fc6",
+      "nodes": 49,
+      "edges": 46,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1928,
+        "h": 1336
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "三个来源：只有单卡、只有子树、两者都有 · 宽屏 · 画 Folder 与 Git 卡": {
+      "hash": "598449d924d44183758e27a24ba9846dd386a9a7e048d6916cf8beac6bc9a210",
+      "nodes": 49,
+      "edges": 46,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 2488,
+        "h": 1200
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "三个来源：只有单卡、只有子树、两者都有 · 窄区域（紧凑模式）": {
+      "hash": "0d7d38bd0cc79a305be072e84d53d7762c155e8a9457eb0dcc96683e3c802994",
+      "nodes": 49,
+      "edges": 46,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1136,
+        "h": 1904
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "三个来源：只有单卡、只有子树、两者都有 · 不规划（经典排法）": {
+      "hash": "18e22b73f7b6df2e97720b8d597f2a32f94de6eb189d06ab0c69c9d3b7d182d4",
+      "nodes": 49,
+      "edges": 46,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1644,
+        "h": 5072
+      },
+      "grid": false,
+      "fitAll": false
+    },
+    "三个来源：只有单卡、只有子树、两者都有 · 窗口很矮": {
+      "hash": "8651da8ff0f4eecf7d023aad47b2ffeb7aa0b3f300b8755091de7e9145729ffd",
+      "nodes": 49,
+      "edges": 46,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 3608,
+        "h": 792
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "三个来源：只有单卡、只有子树、两者都有 · 竖屏的窄窗口": {
+      "hash": "1208e769956945ec6ea6b4209e8c74e0c0da1290b85435858ba750bfb582d02d",
+      "nodes": 49,
+      "edges": 46,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1368,
+        "h": 2016
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "汇聚的会话被推到更右的列 · 桌面 · 默认缩放上限": {
+      "hash": "277b8a656f25544b6efe9db622b230763d11d2b6272e002ea526d3a5c13e53fa",
+      "nodes": 20,
+      "edges": 20,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1368,
+        "h": 792
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "汇聚的会话被推到更右的列 · 桌面 · 缩放上限 0.5": {
+      "hash": "277b8a656f25544b6efe9db622b230763d11d2b6272e002ea526d3a5c13e53fa",
+      "nodes": 20,
+      "edges": 20,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1368,
+        "h": 792
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "汇聚的会话被推到更右的列 · 桌面 · 缩放上限 1.6": {
+      "hash": "277b8a656f25544b6efe9db622b230763d11d2b6272e002ea526d3a5c13e53fa",
+      "nodes": 20,
+      "edges": 20,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1368,
+        "h": 792
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "汇聚的会话被推到更右的列 · 宽屏 · 画 Folder 与 Git 卡": {
+      "hash": "9adb54d5910b2acd98395b0a1000e1fcc9c282535a77eae68bb0cb8d0e5963cd",
+      "nodes": 20,
+      "edges": 20,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1368,
+        "h": 792
+      },
+      "grid": true,
+      "fitAll": false
+    },
+    "汇聚的会话被推到更右的列 · 窄区域（紧凑模式）": {
+      "hash": "ddc98bdead64e883093095a0d3940da693ade7fcc46874dc12e917e8a4ac015c",
+      "nodes": 20,
+      "edges": 20,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 904,
+        "h": 880
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "汇聚的会话被推到更右的列 · 不规划（经典排法）": {
+      "hash": "aba53a210a8ec1632e822a91186b60568a08f178702f99c9813d3deba2c00506",
+      "nodes": 20,
+      "edges": 20,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1644,
+        "h": 2152
+      },
+      "grid": false,
+      "fitAll": false
+    },
+    "汇聚的会话被推到更右的列 · 窗口很矮": {
+      "hash": "43e8fb0a5bc44956fd44f333da95aab87c3a2b4bb5fe5c71a6467741651ce27c",
+      "nodes": 20,
+      "edges": 20,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1928,
+        "h": 520
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "汇聚的会话被推到更右的列 · 竖屏的窄窗口": {
+      "hash": "8c754b5e5e955945413554712d49a4074d082cd7b809c4a6959be2941f20a1bb",
+      "nodes": 20,
+      "edges": 20,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1088,
+        "h": 928
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "汇聚：另一个上级在别的来源块里 · 桌面 · 默认缩放上限": {
+      "hash": "686c0355af7a5654a26a4dc40380a2f4a7193fee5c7b6278b3fdec01e4224c7d",
+      "nodes": 27,
+      "edges": 26,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1648,
+        "h": 792
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "汇聚：另一个上级在别的来源块里 · 桌面 · 缩放上限 0.5": {
+      "hash": "686c0355af7a5654a26a4dc40380a2f4a7193fee5c7b6278b3fdec01e4224c7d",
+      "nodes": 27,
+      "edges": 26,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1648,
+        "h": 792
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "汇聚：另一个上级在别的来源块里 · 桌面 · 缩放上限 1.6": {
+      "hash": "686c0355af7a5654a26a4dc40380a2f4a7193fee5c7b6278b3fdec01e4224c7d",
+      "nodes": 27,
+      "edges": 26,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1648,
+        "h": 792
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "汇聚：另一个上级在别的来源块里 · 宽屏 · 画 Folder 与 Git 卡": {
+      "hash": "6b2f537f0e42c6803c316683deb7e8502acd892259199cd5c55f75d0d64a977e",
+      "nodes": 27,
+      "edges": 26,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1648,
+        "h": 792
+      },
+      "grid": true,
+      "fitAll": false
+    },
+    "汇聚：另一个上级在别的来源块里 · 窄区域（紧凑模式）": {
+      "hash": "2b154c0116489a9e036330db33787612cd864eb96130d421c054817e92e535da",
+      "nodes": 27,
+      "edges": 26,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 672,
+        "h": 1392
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "汇聚：另一个上级在别的来源块里 · 不规划（经典排法）": {
+      "hash": "c4eda6b2f0bbbaa9a720eab4e9a847454e5cc6850e2cd04ba45faa862bcbc20c",
+      "nodes": 27,
+      "edges": 26,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1280,
+        "h": 3136
+      },
+      "grid": false,
+      "fitAll": false
+    },
+    "汇聚：另一个上级在别的来源块里 · 窗口很矮": {
+      "hash": "54397e144f4a648eeeba0a52275267eba1ef483b53abfe97a35ce9b5d4701b41",
+      "nodes": 27,
+      "edges": 26,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 2488,
+        "h": 520
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "汇聚：另一个上级在别的来源块里 · 竖屏的窄窗口": {
+      "hash": "786e81c90829bfd104dd1defdbd0edf48cbeafe5d49b4fe929c7acea8266a1c8",
+      "nodes": 27,
+      "edges": 26,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 808,
+        "h": 1472
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "数据异常：上下级互指与自指 · 桌面 · 默认缩放上限": {
+      "hash": "230ab1846873e7b39844e2eb57eff0a687ac9b4cf4641285ce50aa57e1b4804c",
+      "nodes": 16,
+      "edges": 15,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1088,
+        "h": 656
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "数据异常：上下级互指与自指 · 桌面 · 缩放上限 0.5": {
+      "hash": "230ab1846873e7b39844e2eb57eff0a687ac9b4cf4641285ce50aa57e1b4804c",
+      "nodes": 16,
+      "edges": 15,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1088,
+        "h": 656
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "数据异常：上下级互指与自指 · 桌面 · 缩放上限 1.6": {
+      "hash": "230ab1846873e7b39844e2eb57eff0a687ac9b4cf4641285ce50aa57e1b4804c",
+      "nodes": 16,
+      "edges": 15,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1088,
+        "h": 656
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "数据异常：上下级互指与自指 · 宽屏 · 画 Folder 与 Git 卡": {
+      "hash": "70c9d6ab4ce413e35a63be07bed81b4682a756185a0746ecaef93d391a201030",
+      "nodes": 16,
+      "edges": 15,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1088,
+        "h": 656
+      },
+      "grid": true,
+      "fitAll": false
+    },
+    "数据异常：上下级互指与自指 · 窄区域（紧凑模式）": {
+      "hash": "134e19cfeab4bbdf3056ddbdd57a1e4dce127b3dfb5866661bb61c715b739616",
+      "nodes": 16,
+      "edges": 15,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 440,
+        "h": 1136
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "数据异常：上下级互指与自指 · 不规划（经典排法）": {
+      "hash": "bdeb7b01b16631be49941f38c1a0720a035177a9d0a5aa6d7d34c6064e0179ee",
+      "nodes": 16,
+      "edges": 15,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 576,
+        "h": 2016
+      },
+      "grid": false,
+      "fitAll": false
+    },
+    "数据异常：上下级互指与自指 · 窗口很矮": {
+      "hash": "9995d8bb2a87ef31597e7572772f206896640b1d00f62fb96e9233729ebb9309",
+      "nodes": 16,
+      "edges": 15,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1648,
+        "h": 384
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "数据异常：上下级互指与自指 · 竖屏的窄窗口": {
+      "hash": "df7c5c20473752123e0c4316080a16741ced507a6c05beee6a488c8aa56c7713",
+      "nodes": 16,
+      "edges": 15,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 808,
+        "h": 792
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "被隐藏的来源只剩一张来源卡 · 桌面 · 默认缩放上限": {
+      "hash": "7b653113febb1b3c46fd18faf96c737d980b15d90f53b15423189b7fdc9fdc06",
+      "nodes": 24,
+      "edges": 21,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1648,
+        "h": 792
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "被隐藏的来源只剩一张来源卡 · 桌面 · 缩放上限 0.5": {
+      "hash": "7b653113febb1b3c46fd18faf96c737d980b15d90f53b15423189b7fdc9fdc06",
+      "nodes": 24,
+      "edges": 21,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1648,
+        "h": 792
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "被隐藏的来源只剩一张来源卡 · 桌面 · 缩放上限 1.6": {
+      "hash": "7b653113febb1b3c46fd18faf96c737d980b15d90f53b15423189b7fdc9fdc06",
+      "nodes": 24,
+      "edges": 21,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1648,
+        "h": 792
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "被隐藏的来源只剩一张来源卡 · 宽屏 · 画 Folder 与 Git 卡": {
+      "hash": "558bff44116e9b54edaaa0e7c1447cafd7b454c7462a4f5f6e412d7538bf1400",
+      "nodes": 24,
+      "edges": 21,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1648,
+        "h": 792
+      },
+      "grid": true,
+      "fitAll": false
+    },
+    "被隐藏的来源只剩一张来源卡 · 窄区域（紧凑模式）": {
+      "hash": "9a0b3959e219231f839f5cf8a83c422fc018e13442da0f88d10d1b4c70b7ae0d",
+      "nodes": 24,
+      "edges": 21,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 904,
+        "h": 1264
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "被隐藏的来源只剩一张来源卡 · 不规划（经典排法）": {
+      "hash": "78515405b5a5a88cc0b6bb64d19b59336e493b2a64c70f3f61a5dbb601b81668",
+      "nodes": 24,
+      "edges": 21,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1644,
+        "h": 2624
+      },
+      "grid": false,
+      "fitAll": false
+    },
+    "被隐藏的来源只剩一张来源卡 · 窗口很矮": {
+      "hash": "38987d2e2357a8dcf0228f5a2201734126f6a0ab3ac0d475de0adffc5aec4b50",
+      "nodes": 24,
+      "edges": 21,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 2768,
+        "h": 520
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "被隐藏的来源只剩一张来源卡 · 竖屏的窄窗口": {
+      "hash": "138a71ed701b4c1034a50530e669740ead92705b0549456329751ee159c664fc",
+      "nodes": 24,
+      "edges": 21,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1088,
+        "h": 1336
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "按 visible 收起一部分单卡 · 桌面 · 默认缩放上限": {
+      "hash": "26077ff2a6b61091dd0afe5abaab34fa3c08dae4a340de6f09cc8cbfba7239c6",
+      "nodes": 18,
+      "edges": 17,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1368,
+        "h": 656
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "按 visible 收起一部分单卡 · 桌面 · 缩放上限 0.5": {
+      "hash": "26077ff2a6b61091dd0afe5abaab34fa3c08dae4a340de6f09cc8cbfba7239c6",
+      "nodes": 18,
+      "edges": 17,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1368,
+        "h": 656
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "按 visible 收起一部分单卡 · 桌面 · 缩放上限 1.6": {
+      "hash": "26077ff2a6b61091dd0afe5abaab34fa3c08dae4a340de6f09cc8cbfba7239c6",
+      "nodes": 18,
+      "edges": 17,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1368,
+        "h": 656
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "按 visible 收起一部分单卡 · 宽屏 · 画 Folder 与 Git 卡": {
+      "hash": "bd1830ff849e9b73e3a75509500ae5d01d4f244fd0f91e969315f1032211fa11",
+      "nodes": 18,
+      "edges": 17,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1368,
+        "h": 656
+      },
+      "grid": true,
+      "fitAll": false
+    },
+    "按 visible 收起一部分单卡 · 窄区域（紧凑模式）": {
+      "hash": "f75feb7301e948d7f5a2b0b395bd2124515d13263396631b912dec6048345ffd",
+      "nodes": 18,
+      "edges": 17,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 904,
+        "h": 880
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "按 visible 收起一部分单卡 · 不规划（经典排法）": {
+      "hash": "40420bb35099b1c6f2adc45a0c0aeb550bf9dc1f55393cb1e67cab6cbfeec8cf",
+      "nodes": 18,
+      "edges": 17,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1644,
+        "h": 1880
+      },
+      "grid": false,
+      "fitAll": false
+    },
+    "按 visible 收起一部分单卡 · 窗口很矮": {
+      "hash": "70d433283e39a2785b596636fb00556a970f2e50ea0a9e7992d3b73e6ccfe8b5",
+      "nodes": 18,
+      "edges": 17,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1648,
+        "h": 520
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "按 visible 收起一部分单卡 · 竖屏的窄窗口": {
+      "hash": "d8c7ffd906b1ab222441d0d2047ee2c368a75f88cf5232267f28526465535b74",
+      "nodes": 18,
+      "edges": 17,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1088,
+        "h": 928
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "两个来源共用 Folder 与 Git 卡 · 桌面 · 默认缩放上限": {
+      "hash": "bb13a593cbb4950089473de5d4b1da2ecae4dfe0c5c959d58696c43b72b72696",
+      "nodes": 22,
+      "edges": 20,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1368,
+        "h": 792
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "两个来源共用 Folder 与 Git 卡 · 桌面 · 缩放上限 0.5": {
+      "hash": "bb13a593cbb4950089473de5d4b1da2ecae4dfe0c5c959d58696c43b72b72696",
+      "nodes": 22,
+      "edges": 20,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1368,
+        "h": 792
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "两个来源共用 Folder 与 Git 卡 · 桌面 · 缩放上限 1.6": {
+      "hash": "bb13a593cbb4950089473de5d4b1da2ecae4dfe0c5c959d58696c43b72b72696",
+      "nodes": 22,
+      "edges": 20,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1368,
+        "h": 792
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "两个来源共用 Folder 与 Git 卡 · 宽屏 · 画 Folder 与 Git 卡": {
+      "hash": "63a11606134370ac504ef2dcb81d4119f2acf6ae9c4e8605d13bb4ec95e81c36",
+      "nodes": 24,
+      "edges": 23,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1648,
+        "h": 928
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "两个来源共用 Folder 与 Git 卡 · 窄区域（紧凑模式）": {
+      "hash": "d83d1cf5cc8d36a2df7f1e5c722ac55c5b14346c73667c762f09d494d8f0e95a",
+      "nodes": 22,
+      "edges": 20,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 672,
+        "h": 1136
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "两个来源共用 Folder 与 Git 卡 · 不规划（经典排法）": {
+      "hash": "c407eaf6f87e2f3b4f0f380124af5a6372dd24b22a729f67a8e6a7728ca1db25",
+      "nodes": 24,
+      "edges": 23,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1184,
+        "h": 2728
+      },
+      "grid": false,
+      "fitAll": false
+    },
+    "两个来源共用 Folder 与 Git 卡 · 窗口很矮": {
+      "hash": "0c92671bedb66ade2db08e245e335bfd1a8b480b1bda9ab35c0cf85545abd2dc",
+      "nodes": 22,
+      "edges": 20,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 2208,
+        "h": 384
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "两个来源共用 Folder 与 Git 卡 · 竖屏的窄窗口": {
+      "hash": "5db5ebd1afb56d79ecb0ba3a19a8403677ad61c6ce99074a0e1fecc416a9e37e",
+      "nodes": 22,
+      "edges": 20,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 808,
+        "h": 1064
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "一个父会话带 32 个子会话 · 桌面 · 默认缩放上限": {
+      "hash": "6d1ff00667d3ce877baf5c94841093582b41dfa3abb50a90924748f46cef17af",
+      "nodes": 34,
+      "edges": 33,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1648,
+        "h": 1064
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "一个父会话带 32 个子会话 · 桌面 · 缩放上限 0.5": {
+      "hash": "6d1ff00667d3ce877baf5c94841093582b41dfa3abb50a90924748f46cef17af",
+      "nodes": 34,
+      "edges": 33,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1648,
+        "h": 1064
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "一个父会话带 32 个子会话 · 桌面 · 缩放上限 1.6": {
+      "hash": "6d1ff00667d3ce877baf5c94841093582b41dfa3abb50a90924748f46cef17af",
+      "nodes": 34,
+      "edges": 33,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1648,
+        "h": 1064
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "一个父会话带 32 个子会话 · 宽屏 · 画 Folder 与 Git 卡": {
+      "hash": "c80544b0733804e9dbd96aea1c0fe76858784169e2d1e4b72f10a58da987c76a",
+      "nodes": 34,
+      "edges": 33,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1928,
+        "h": 928
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "一个父会话带 32 个子会话 · 窄区域（紧凑模式）": {
+      "hash": "cf97f3d1fd92f22afb202449d99a147973869a422b1519c616b96d94eed635f3",
+      "nodes": 34,
+      "edges": 33,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 904,
+        "h": 1520
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "一个父会话带 32 个子会话 · 不规划（经典排法）": {
+      "hash": "0aeb838ccf20cadb594754bf68a472d26c196d6df57edaae494b47b143129e2c",
+      "nodes": 34,
+      "edges": 33,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 940,
+        "h": 4328
+      },
+      "grid": false,
+      "fitAll": false
+    },
+    "一个父会话带 32 个子会话 · 窗口很矮": {
+      "hash": "ec60a5376eaa65da0e9e9bf6182ee01147b068020af53f10de7997598aeac961",
+      "nodes": 34,
+      "edges": 33,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 2768,
+        "h": 520
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "一个父会话带 32 个子会话 · 竖屏的窄窗口": {
+      "hash": "0c383fb723d72cbce1d50e6c44a3c98f346769a6d0aede73b8cbe325102d19ee",
+      "nodes": 34,
+      "edges": 33,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1088,
+        "h": 1608
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "多棵中等的树加许多单卡 · 桌面 · 默认缩放上限": {
+      "hash": "2187b2459ab4d8f0618b11a5e50b57abd304b088e89b478472c36eeaa0085bdb",
+      "nodes": 60,
+      "edges": 59,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 2768,
+        "h": 1200
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "多棵中等的树加许多单卡 · 桌面 · 缩放上限 0.5": {
+      "hash": "2187b2459ab4d8f0618b11a5e50b57abd304b088e89b478472c36eeaa0085bdb",
+      "nodes": 60,
+      "edges": 59,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 2768,
+        "h": 1200
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "多棵中等的树加许多单卡 · 桌面 · 缩放上限 1.6": {
+      "hash": "2187b2459ab4d8f0618b11a5e50b57abd304b088e89b478472c36eeaa0085bdb",
+      "nodes": 60,
+      "edges": 59,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 2768,
+        "h": 1200
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "多棵中等的树加许多单卡 · 宽屏 · 画 Folder 与 Git 卡": {
+      "hash": "2187b2459ab4d8f0618b11a5e50b57abd304b088e89b478472c36eeaa0085bdb",
+      "nodes": 60,
+      "edges": 59,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 2768,
+        "h": 1200
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "多棵中等的树加许多单卡 · 窄区域（紧凑模式）": {
+      "hash": "2e16fbbbe2d8023adef6f4baebec4c944bc59444c59bf6c382c96d3e5923bc71",
+      "nodes": 60,
+      "edges": 59,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1136,
+        "h": 2032
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "多棵中等的树加许多单卡 · 不规划（经典排法）": {
+      "hash": "4a864bfd164e05bdcae51c42b8670c6d7f6e785a7951954ded474338323e4054",
+      "nodes": 60,
+      "edges": 59,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1304,
+        "h": 6640
+      },
+      "grid": false,
+      "fitAll": false
+    },
+    "多棵中等的树加许多单卡 · 窗口很矮": {
+      "hash": "702fd3ec214f30bd20368b55b28c7718a5f873bae6792c05f6cb1a03e8d7c1e7",
+      "nodes": 60,
+      "edges": 59,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 4168,
+        "h": 928
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "多棵中等的树加许多单卡 · 竖屏的窄窗口": {
+      "hash": "0d676eb2eb9064afd8e6476232247a10e0c8a35a7300cc94fded667217e055ba",
+      "nodes": 60,
+      "edges": 59,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1368,
+        "h": 2152
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "嵌套三层 · 桌面 · 默认缩放上限": {
+      "hash": "fe3332d9cf938b17b66fee8eed16be004e80958e51b39b201cd87f9d45575db3",
+      "nodes": 35,
+      "edges": 34,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1928,
+        "h": 1064
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "嵌套三层 · 桌面 · 缩放上限 0.5": {
+      "hash": "fe3332d9cf938b17b66fee8eed16be004e80958e51b39b201cd87f9d45575db3",
+      "nodes": 35,
+      "edges": 34,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1928,
+        "h": 1064
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "嵌套三层 · 桌面 · 缩放上限 1.6": {
+      "hash": "fe3332d9cf938b17b66fee8eed16be004e80958e51b39b201cd87f9d45575db3",
+      "nodes": 35,
+      "edges": 34,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1928,
+        "h": 1064
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "嵌套三层 · 宽屏 · 画 Folder 与 Git 卡": {
+      "hash": "fe3332d9cf938b17b66fee8eed16be004e80958e51b39b201cd87f9d45575db3",
+      "nodes": 35,
+      "edges": 34,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1928,
+        "h": 1064
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "嵌套三层 · 窄区域（紧凑模式）": {
+      "hash": "03d393981f11570c5cca895bc8d76379ef17b802653d256861e07848e7a9d23b",
+      "nodes": 35,
+      "edges": 34,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1136,
+        "h": 1648
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "嵌套三层 · 不规划（经典排法）": {
+      "hash": "b337db760c1014dd909fbf88b0c9e50324c0195f2a814cd8ecd54010363f7cd6",
+      "nodes": 35,
+      "edges": 34,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1304,
+        "h": 3512
+      },
+      "grid": false,
+      "fitAll": false
+    },
+    "嵌套三层 · 窗口很矮": {
+      "hash": "cec8f7e983f1524ec8f5937b84ffacc07a799ea79d752c2fc320d353742a46c2",
+      "nodes": 35,
+      "edges": 34,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 2488,
+        "h": 792
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "嵌套三层 · 竖屏的窄窗口": {
+      "hash": "a1ee90ee84d150ceb304ecdf646e79528d18632b6fb1338c39de57fd1c483983",
+      "nodes": 35,
+      "edges": 34,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1368,
+        "h": 1744
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "四个来源并排：单卡、小树、一个父会话带很多子会话、只有一个会话 · 桌面 · 默认缩放上限": {
+      "hash": "33a7e8ec3a0788b7f9b79106c66495d3f138f93b0536239765951b3f2f5358e0",
+      "nodes": 47,
+      "edges": 43,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 2208,
+        "h": 1336
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "四个来源并排：单卡、小树、一个父会话带很多子会话、只有一个会话 · 桌面 · 缩放上限 0.5": {
+      "hash": "33a7e8ec3a0788b7f9b79106c66495d3f138f93b0536239765951b3f2f5358e0",
+      "nodes": 47,
+      "edges": 43,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 2208,
+        "h": 1336
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "四个来源并排：单卡、小树、一个父会话带很多子会话、只有一个会话 · 桌面 · 缩放上限 1.6": {
+      "hash": "33a7e8ec3a0788b7f9b79106c66495d3f138f93b0536239765951b3f2f5358e0",
+      "nodes": 47,
+      "edges": 43,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 2208,
+        "h": 1336
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "四个来源并排：单卡、小树、一个父会话带很多子会话、只有一个会话 · 宽屏 · 画 Folder 与 Git 卡": {
+      "hash": "b96684e8270f4c909eb1e08fb5a048334d48878f015830e81bd433ac60a840eb",
+      "nodes": 47,
+      "edges": 43,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 2488,
+        "h": 1200
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "四个来源并排：单卡、小树、一个父会话带很多子会话、只有一个会话 · 窄区域（紧凑模式）": {
+      "hash": "7f253eff5c5bb2a4d23571d1c1d25edb17647f8eff2c2cf5922f2e6c52a6259b",
+      "nodes": 47,
+      "edges": 43,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1136,
+        "h": 2032
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "四个来源并排：单卡、小树、一个父会话带很多子会话、只有一个会话 · 不规划（经典排法）": {
+      "hash": "906008a34786466e11f87945fb7815cc96c583c5c7fd7a6e56c110072bc5cc04",
+      "nodes": 47,
+      "edges": 43,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1304,
+        "h": 4968
+      },
+      "grid": false,
+      "fitAll": false
+    },
+    "四个来源并排：单卡、小树、一个父会话带很多子会话、只有一个会话 · 窗口很矮": {
+      "hash": "f07b8b02a3e21d544e68f52c3325088e2d3fcf643a6557959ae3f1ca5ce78b01",
+      "nodes": 47,
+      "edges": 43,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 3608,
+        "h": 792
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "四个来源并排：单卡、小树、一个父会话带很多子会话、只有一个会话 · 竖屏的窄窗口": {
+      "hash": "2e99a1f89ebd2cd695fe4767f94d2320e85a02aa11d5c208cd6f2dfbe2181489",
+      "nodes": 47,
+      "edges": 43,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1368,
+        "h": 2152
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "一百多个会话：单卡与小树混排 · 桌面 · 默认缩放上限": {
+      "hash": "a0db9380393d8964f137b4cb614a62958037e55fdbb15f8fb3f7dc0deb86e99d",
+      "nodes": 127,
+      "edges": 126,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 3048,
+        "h": 2016
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "一百多个会话：单卡与小树混排 · 桌面 · 缩放上限 0.5": {
+      "hash": "a0db9380393d8964f137b4cb614a62958037e55fdbb15f8fb3f7dc0deb86e99d",
+      "nodes": 127,
+      "edges": 126,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 3048,
+        "h": 2016
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "一百多个会话：单卡与小树混排 · 桌面 · 缩放上限 1.6": {
+      "hash": "a0db9380393d8964f137b4cb614a62958037e55fdbb15f8fb3f7dc0deb86e99d",
+      "nodes": 127,
+      "edges": 126,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 3048,
+        "h": 2016
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "一百多个会话：单卡与小树混排 · 宽屏 · 画 Folder 与 Git 卡": {
+      "hash": "d64981ce765ca77f940cc1116b6c339148b048056b5b70891a3c095ccad2c80b",
+      "nodes": 127,
+      "edges": 126,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 3608,
+        "h": 1880
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "一百多个会话：单卡与小树混排 · 窄区域（紧凑模式）": {
+      "hash": "b6f427ae2df249a8328526ea0a9f6596a51c8dc660cca5ffda2b5f0fca566ca1",
+      "nodes": 127,
+      "edges": 126,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1600,
+        "h": 3440
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "一百多个会话：单卡与小树混排 · 不规划（经典排法）": {
+      "hash": "ed3de1278096a23781be4b26b3fae65e12ad0d566383f26e8a926899b4e5d55d",
+      "nodes": 127,
+      "edges": 126,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1304,
+        "h": 14936
+      },
+      "grid": false,
+      "fitAll": false
+    },
+    "一百多个会话：单卡与小树混排 · 窗口很矮": {
+      "hash": "652fd1f96fce410e92012b33299633ca55632d247a9fdce6dc087ee9d250c749",
+      "nodes": 127,
+      "edges": 126,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 5568,
+        "h": 1200
+      },
+      "grid": true,
+      "fitAll": true
+    },
+    "一百多个会话：单卡与小树混排 · 竖屏的窄窗口": {
+      "hash": "c4e7f748ef573d57ecbc63feda0fbacc8e55c2b4912c35b7fe993c18f847f993",
+      "nodes": 127,
+      "edges": 126,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 2488,
+        "h": 3376
+      },
+      "grid": true,
+      "fitAll": true
+    }
+  }
+}

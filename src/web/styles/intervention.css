@@ -1,0 +1,453 @@
+/* 聚焦视图：消息的投递轨迹，以及底部的干预输入。
+ * 对话区的版式变量（--conv-*）与容器查询的定义在 timeline.css 开头。 */
+
+/* ───────────────────────── 投递轨迹 ─────────────────────────
+ *
+ * 三步方块：已记录 → 已交给执行端 → 已生效。方块表示“走到哪一步”，文字说明“现在是什么状态”；
+ * 颜色只给两种情形：失败（红）与排队（偏暖的灰褐）。已走过的步骤是石墨色，不用朱砂——
+ * 本主题里朱砂与红是同一种颜色，完成用朱砂就会和失败混在一起。
+ * 已生效是终点，收成一行（见 Delivery.tsx）；逐条记录仍在悬停提示里。 */
+
+.delivery {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px 14px;
+  min-width: 0;
+}
+
+.dl-steps {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dl-steps li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--conv-ink-3);
+  font-size: 11.5px;
+  line-height: 16px;
+}
+
+/* 连接线夹在两步之间，前后留白相等（8px）：线前是上一步的文字，线后是下一步的方块（li 自带 6px 间距 + 这里的 2px）。 */
+.dl-steps li + li::before {
+  content: "";
+  width: 16px;
+  height: 1px;
+  margin: 0 2px 0 8px;
+  background: var(--conv-rule);
+}
+
+.dl-dot {
+  display: grid;
+  flex: none;
+  place-items: center;
+  box-sizing: border-box;
+  width: 12px;
+  height: 12px;
+  box-shadow: inset 0 0 0 1px currentColor;
+}
+
+.dl-name {
+  padding-bottom: 1px;
+}
+
+.dl-steps li[data-state="done"] {
+  color: var(--conv-ink-2);
+}
+
+.dl-steps li[data-state="done"] .dl-dot {
+  background: var(--conv-ink-2);
+  box-shadow: none;
+  color: var(--conv-surface);
+}
+
+.dl-steps li[data-state="done"] + li::before {
+  background: var(--conv-ink-3);
+}
+
+/* 当前所在的这一步：框里一个实心小方块轻轻起伏，表示“在等”。 */
+.dl-steps li[data-state="current"] {
+  color: var(--conv-ink);
+}
+
+.dl-steps li[data-state="current"] .dl-dot::after {
+  content: "";
+  width: 4px;
+  height: 4px;
+  background: currentColor;
+  animation: breathe 2s ease-in-out infinite;
+}
+
+.dl-steps li[data-state="failed"] {
+  color: var(--conv-danger);
+}
+
+.dl-steps li[data-state="failed"] .dl-dot {
+  background: var(--conv-danger);
+  box-shadow: none;
+  color: var(--conv-surface);
+}
+
+.dl-steps li[data-state="cancelled"] {
+  color: var(--conv-ink-3);
+}
+
+.dl-steps li[data-state="cancelled"] .dl-dot {
+  border: 1px dashed currentColor;
+  box-shadow: none;
+}
+
+.dl-status {
+  min-width: 0;
+  color: var(--conv-ink-3);
+  font-size: 11.5px;
+  line-height: 16px;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.dl-status[data-tone="amber"] {
+  color: var(--conv-warn);
+}
+
+.dl-status[data-tone="red"] {
+  color: var(--conv-danger);
+}
+
+/* 已生效：一枚小对勾加一句话，比三步方块安静得多。 */
+.delivery[data-compact] {
+  flex-wrap: nowrap;
+  gap: 6px;
+}
+
+.dl-done {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 12px;
+  height: 12px;
+  background: var(--conv-ink-3);
+  color: var(--conv-surface);
+}
+
+/* 右栏“消息记录”里的小方块（列表里用，不替代文字）。 */
+.stage-dot {
+  display: inline-block;
+  flex: none;
+  width: 7px;
+  height: 7px;
+  background: var(--text-3);
+}
+
+.stage-dot[data-stage="queued"] {
+  background: var(--amber);
+}
+
+.stage-dot[data-stage="handed_off"] {
+  background: var(--blue);
+}
+
+.stage-dot[data-stage="applied"] {
+  background: var(--text-3);
+}
+
+.stage-dot[data-stage="failed"] {
+  background: var(--red);
+}
+
+.stage-dot[data-stage="cancelled"] {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--text-3);
+}
+
+.sync-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--conv-ink-3);
+  font-size: 11.5px;
+  line-height: 16px;
+}
+
+.sync-tag[data-state="pending"] {
+  color: var(--conv-warn);
+}
+
+/* ───────────────────────── 干预输入 ─────────────────────────
+ *
+ * 一个整体：输入区、提示、工具条在同一张卡里，没有分开的“输入框”和“按钮栏”。
+ * 与阅读列同宽；卡片与里面的按钮都是直角，6px 的内边距让发送键落在右下角时与外框的两条边等距。 */
+
+.composer {
+  container: composer / inline-size;
+  flex: none;
+  width: 100%;
+  max-width: calc(var(--conv-measure) + 2 * var(--conv-gutter));
+  margin: 0 auto;
+  padding: 0 var(--conv-gutter) 16px;
+}
+
+.composer-box {
+  background: var(--conv-surface);
+  box-shadow: 0 0 0 1px var(--conv-rule), 0 1px 2px color-mix(in srgb, var(--fill) 4%, transparent);
+  transition: box-shadow var(--dur) var(--ease-out);
+}
+
+/* 键盘焦点：朱砂细环加一圈淡晕（同输入框的聚焦样式）。 */
+.composer-box:focus-within {
+  box-shadow: 0 0 0 1px var(--conv-live), 0 0 0 4px color-mix(in srgb, var(--conv-live) 10%, transparent);
+}
+
+/* 失败或超长：环换成红色，聚焦时也保持（红色是出了问题，不是“焦点”）。 */
+.composer-box[data-error],
+.composer-box[data-over],
+.composer-box[data-error]:focus-within,
+.composer-box[data-over]:focus-within {
+  box-shadow: 0 0 0 1px var(--conv-danger), 0 0 0 4px color-mix(in srgb, var(--conv-danger) 10%, transparent);
+}
+
+.composer-box textarea {
+  display: block;
+  width: 100%;
+  min-height: 46px;
+  max-height: clamp(96px, 32vh, 240px);
+  padding: 13px 16px 4px;
+  border: 0;
+  background: transparent;
+  color: var(--conv-ink);
+  font-size: 13.5px;
+  line-height: 24px;
+  resize: none;
+}
+
+/* 占位符只是一句提示，不该把只有一行的输入框撑成两行（撑开了，第一次敲字时整块输入区会突然矮下去）：放不下就以省略号收尾，完整的话仍在 placeholder 属性里。 */
+.composer-box textarea::placeholder {
+  overflow: hidden;
+  color: var(--conv-ink-3);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.composer-box textarea:focus {
+  outline: none;
+}
+
+/* 提示（发送失败的原因、超长）与字数，放在卡片里、输入区下面，不另起一行脚注。 */
+.composer-notice {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 2px 16px 6px;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.composer-error {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+  color: var(--conv-danger);
+  overflow-wrap: anywhere;
+}
+
+.composer-error > svg {
+  flex: none;
+  margin-top: 3px;
+}
+
+.composer-count {
+  flex: none;
+  margin-left: auto;
+  color: var(--conv-ink-3);
+}
+
+.composer-count[data-over] {
+  color: var(--conv-danger);
+}
+
+.composer-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 6px;
+}
+
+.composer-mode {
+  display: flex;
+  flex: none;
+  align-items: center;
+}
+
+/* 运行中的“纠偏 / 排队”：与分段控件同样的外形（托盘 = 按钮 + 2px），但只在这里用，规则单独写。 */
+.composer-modes {
+  display: inline-flex;
+  padding: 2px;
+  background: var(--conv-hover);
+}
+
+.composer-modes button {
+  height: 28px;
+  padding: 0 11px 2px;
+  color: var(--conv-ink-3);
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.composer-modes button:hover {
+  color: var(--conv-ink);
+}
+
+.composer-modes button[aria-checked="true"] {
+  background: var(--conv-surface);
+  box-shadow: 0 0 0 1px var(--conv-hairline), 0 1px 3px color-mix(in srgb, var(--fill) 10%, transparent);
+  color: var(--conv-ink);
+}
+
+/* 不能选的时候就只是一个标签：这个执行端不能在运行中纠偏，所以只有“排队”。 */
+.composer-mode-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 6px 1px 8px;
+  color: var(--conv-ink-3);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* 能力与投递方式：纯文字的注记。位置会随宽度变化（窄时换到第二行），内容与悬停说明始终都在。 */
+.composer-meta {
+  display: flex;
+  flex: 1 1 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 12px;
+  min-width: 0;
+  padding: 0 4px;
+}
+
+.cap-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--conv-ink-3);
+  font-size: 12px;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.cap-note[data-tone="ok"] {
+  color: var(--conv-ink-2);
+}
+
+.cap-note[data-tone="amber"] {
+  color: var(--conv-warn);
+}
+
+.composer-actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+/* 中断：安静的描边按钮，悬停才露出“危险”的颜色；中断一次运行是可以撤回再开始的，不用实心红。 */
+.composer-stop {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 12px 1px;
+  box-shadow: inset 0 0 0 1px var(--conv-rule);
+  color: var(--conv-ink-2);
+  font-size: 12.5px;
+  line-height: 1;
+  white-space: nowrap;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.composer-stop:hover:not(:disabled) {
+  background: var(--conv-danger-tint);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--conv-danger) 30%, transparent);
+  color: var(--conv-danger);
+}
+
+.composer-stop:disabled {
+  cursor: progress;
+  color: var(--conv-ink-3);
+}
+
+.composer .send-btn {
+  width: 36px;
+  height: 36px;
+  padding: 0 0 1px;
+}
+
+/* 已结束的会话：不放一个灰掉的输入框，只用一行字说明原因；它不是控件，所以没有环。 */
+.composer-closed {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 16px 1px;
+  background: var(--conv-hover);
+  color: var(--conv-ink-2);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.composer-closed > svg {
+  flex: none;
+}
+
+/* 窄：状态与操作分成两行，能力注记放到第二行。英文的注记更长，所以换行得更早一点。 */
+@container composer (max-width: 460px) {
+  .composer-bar {
+    flex-wrap: wrap;
+    row-gap: 2px;
+  }
+
+  .composer-meta {
+    order: 3;
+    flex: 1 1 100%;
+    padding: 0 6px 4px;
+  }
+}
+
+@container composer (max-width: 560px) {
+  html:not([lang="zh-CN"]) .composer-bar {
+    flex-wrap: wrap;
+    row-gap: 2px;
+  }
+
+  html:not([lang="zh-CN"]) .composer-meta {
+    order: 3;
+    flex: 1 1 100%;
+    padding: 0 6px 4px;
+  }
+}
+
+/* 更窄：中断只留图标（名称仍在无障碍名称与悬停提示里）。 */
+@container composer (max-width: 340px) {
+  .composer-stop {
+    padding: 0;
+  }
+
+  .composer-stop-label {
+    display: none;
+  }
+}
