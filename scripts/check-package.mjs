@@ -11,6 +11,10 @@
 //   node scripts/check-package.mjs            检查包与安装流程
 //   node scripts/check-package.mjs --clean    发布前用（npm publish 会自动带上）：另外要求工作区没有未提交的改动，
 //                                             保证发布出去的就是仓库里的这份
+//   node scripts/check-package.mjs --published
+//                                             发布并生效之后用：检查 registry 上的 <名字>@<版本>，而不是本地打出的包——
+//                                             从 registry 下载内容检查、按 <名字>@<版本> 安装、用 `npx <名字>@latest` 的方式运行，
+//                                             其余检查相同；需要联网，npm 缓存与用户目录仍是全新的临时目录（不带你的 npm 登录）
 import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
@@ -22,6 +26,7 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const flags = new Set(process.argv.slice(2));
+const published = flags.has("--published");
 const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
 const isWindows = process.platform === "win32";
 
@@ -58,7 +63,7 @@ function run(command, commandArgs, options = {}) {
 }
 
 const tmp = mkdtempSync(join(tmpdir(), "ensemble-package-"));
-const dirs = { pack: join(tmp, "pack"), global: join(tmp, "global"), cache: join(tmp, "npm-cache"), home: join(tmp, "home"), state: join(tmp, "state") };
+const dirs = { pack: join(tmp, "pack"), global: join(tmp, "global"), cache: join(tmp, "npm-cache"), cacheNpx: join(tmp, "npm-cache-npx"), home: join(tmp, "home"), state: join(tmp, "state") };
 for (const dir of Object.values(dirs)) mkdirSync(dir, { recursive: true });
 
 // 子进程的环境：用户主目录、状态目录都指向临时目录；模拟执行端；把外层 npm 注入的配置去掉（比如 publish --dry-run
@@ -82,13 +87,17 @@ function ensemble(commandArgs) {
 const sha256 = (file) => createHash("sha256").update(readFileSync(file)).digest("hex");
 
 try {
+  if (published) console.log(`检查 registry 上的 ${pkg.name}@${pkg.version}（需要联网；npm 缓存与用户目录都是全新的临时目录）\n`);
   if (flags.has("--clean")) {
     const status = await run("git", ["status", "--porcelain"]);
     check("工作区没有未提交的改动（发布出去的就是仓库里的这份）", status.code === 0 && status.stdout.trim() === "", status.code === 0 ? status.stdout.split("\n").slice(0, 10).join("\n") : `不是 git 工作区，或没有安装 git：${status.stderr}`);
   }
 
   // ── 1. 包里有什么 ──
-  const packed = await npm(["pack", "--json", "--ignore-scripts", "--pack-destination", dirs.pack]);
+  // --published 时 npm pack 是从 registry 下载 <名字>@<版本> 那一份（在中立目录、全新缓存里），下面的内容检查就是对它做的。
+  const packed = published
+    ? await npm(["pack", `${pkg.name}@${pkg.version}`, "--json", "--ignore-scripts", "--cache", dirs.cache, "--pack-destination", dirs.pack], { cwd: tmp })
+    : await npm(["pack", "--json", "--ignore-scripts", "--pack-destination", dirs.pack]);
   let info;
   try {
     info = JSON.parse(packed.stdout)[0];
@@ -126,7 +135,8 @@ try {
 
   // ── 2. 像用户那样安装 ──
   const tarball = join(dirs.pack, info.filename);
-  const installed = await npm(["install", "-g", "--prefix", dirs.global, "--cache", dirs.cache, "--offline", "--no-audit", "--no-fund", "--ignore-scripts", tarball]);
+  // 平时装本地打出的 tgz，全程离线；--published 时按 <名字>@<版本> 从 registry 装（用户 `npm install -g <名字>` 走的就是这条路）。
+  const installed = await npm(["install", "-g", "--prefix", dirs.global, "--cache", dirs.cache, ...(published ? [] : ["--offline"]), "--no-audit", "--no-fund", "--ignore-scripts", published ? `${pkg.name}@${pkg.version}` : tarball]);
   const packageDir = isWindows ? join(dirs.global, "node_modules", ...pkg.name.split("/")) : join(dirs.global, "lib", "node_modules", ...pkg.name.split("/"));
   shim = isWindows ? join(dirs.global, "ensemble.cmd") : join(dirs.global, "bin", "ensemble");
   if (!check("npm install -g 安装成功，并生成了 ensemble 命令", installed.code === 0 && existsSync(shim) && existsSync(join(packageDir, "dist", "ensemble.mjs")), installed.stderr.slice(-600))) throw new Error("安装失败，后面的检查无从谈起");
@@ -140,11 +150,27 @@ try {
   const doctor = await ensemble(["doctor"]);
   check("ensemble doctor 在安装位置找到了网页界面", doctor.code === 0 && doctor.stdout.includes("网页界面已构建") && doctor.stdout.includes(join("node_modules", ...pkg.name.split("/"), "dist", "web")), `${doctor.stdout}${doctor.stderr}`.slice(0, 700));
 
+  // 没有 install 支持的宿主：README 让 Agent 全局安装后，把 `node <npm root -g>/<包名>/dist/ensemble.mjs mcp` 注册成 stdio MCP 服务器。
+  // 这里直接启动全局安装位置里的那份桥（不经过插件副本），确认它能列出 8 个工具。
+  const bridgeLabel = "全局安装位置里的 MCP 桥（node <包目录>/dist/ensemble.mjs mcp）可直接注册成 stdio 服务器，并列出 8 个工具";
+  let globalClient;
+  try {
+    globalClient = new Client({ name: "generic-mcp-host", version: "check" });
+    await globalClient.connect(new StdioClientTransport({ command: process.execPath, args: [join(packageDir, "dist", "ensemble.mjs"), "mcp"], env, cwd: tmp, stderr: "pipe" }));
+    const globalTools = (await globalClient.listTools()).tools.map((tool) => tool.name).sort();
+    check(bridgeLabel, globalTools.join() === "cancel,delegate,harnesses,open_panel,read,send,status,wait", globalTools.join());
+  } catch (error) {
+    check(bridgeLabel, false, error instanceof Error ? error.message : String(error));
+  } finally {
+    await globalClient?.close().catch(() => undefined);
+  }
+
   // ── 3. 像 npx 那样运行 ──
   // 包规格用 file: 形式：npm 对 Windows 的绝对路径（C:\…）不会报错，却什么也不运行。
   // 不指定命令名，只给包规格：npm 会运行包里唯一的那个 bin（与 `npx <包名> …` 相同）。
-  const spec = `file:${tarball.split("\\").join("/")}`;
-  const exec = await npm(["exec", "--yes", "--cache", dirs.cache, "--offline", "--", spec, "version"], { cwd: tmp });
+  // --published 时用 `<名字>@latest`（README 里给 Agent 的就是这种写法），并换一个全新的缓存，保证是从 registry 现取的。
+  const spec = published ? `${pkg.name}@latest` : `file:${tarball.split("\\").join("/")}`;
+  const exec = await npm(["exec", "--yes", "--cache", published ? dirs.cacheNpx : dirs.cache, ...(published ? [] : ["--offline"]), "--", spec, "version"], { cwd: tmp });
   check("npx 方式运行同一个包（npm exec -- <包> version，不指定命令名）", exec.code === 0 && exec.stdout.trim() === pkg.version, `${exec.code} ${exec.stdout}${exec.stderr}`.slice(-600));
 
   // ── 4. 用它安装插件 ──

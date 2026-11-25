@@ -47,6 +47,7 @@
     "build:server": "node scripts/build.mjs --server",
     "build:web": "node scripts/build.mjs --web",
     "check:package": "node scripts/check-package.mjs",
+    "check:published": "node scripts/check-package.mjs --published",
     "prepublishOnly": "npm run build && node scripts/check-package.mjs --clean",
     "dev:service": "tsx --tsconfig tsconfig.node.json src/cli/main.ts serve --dev",
     "dev:web": "vite --config vite.config.ts",

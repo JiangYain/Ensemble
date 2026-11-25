@@ -21,18 +21,20 @@ Ensemble 是一个 [Agent Plugin](https://agent-plugins.org/)：由 MCP 服务�
 前置：Node.js ≥ 22.13；至少装好一个执行端——[Codex CLI](https://github.com/openai/codex)、Pi（`npm install -g @earendil-works/pi-coding-agent`）、[Claude Code](https://code.claude.com/docs/en/setup)、[OpenCode](https://github.com/anomalyco/opencode)（`npm install -g @opencode/cli`，需要 2.x）、[DSH](https://www.npmjs.com/package/@deepseek-ai/dsh)（DeepSeek Harness，`npm install -g @deepseek-ai/dsh@latest`；目前只发布了预发布版本，所以必须带 `@latest`；包声明需要 Node ≥ 24.9.0，在本机 Node 22.22.2 上实测可用，但那不是官方支持的组合，要符合官方要求请自行升级 Node）或 Cursor SDK（见下）。Claude Code、OpenCode 与 DSH 需先完成它们自身的登录或模型配置（DSH：在 `dsh web` 的 Settings → Models 里填 DeepSeek API Key，或在启动服务的环境里设 `DEEPSEEK_API_KEY`；没配时第一轮会以 `auth_failed` 失败，dsh 的原文会说明怎么补）。
 
 ```powershell
-# 1. 看看这台机器上哪些执行端可用，以及缺什么
-node dist/ensemble.mjs doctor
+# 1. 看看这台机器上哪些执行端可用，以及缺什么（npx 会把包下载到 npm 缓存里运行，不用先克隆仓库）
+npx -y ensemble-plugin@latest doctor
 
 # 2. 把插件装到宿主里。install 会修改用户级配置，所以默认只展示计划；确认后加 --yes
-node dist/ensemble.mjs install codex --dry-run
-node dist/ensemble.mjs install codex --yes
-node dist/ensemble.mjs install cursor --yes        # 在 Cursor 里随后执行 “Reload Window”
+npx -y ensemble-plugin@latest install codex --dry-run
+npx -y ensemble-plugin@latest install codex --yes
+npx -y ensemble-plugin@latest install cursor --yes        # 在 Cursor 里随后执行 “Reload Window”
 
 # 3. 使用 Cursor 作为执行端时：安装 @cursor/sdk（许可证不允许随插件分发），再登录
-node dist/ensemble.mjs install sdk --yes
-node dist/ensemble.mjs cursor-login
+npx -y ensemble-plugin@latest install sdk --yes
+npx -y ensemble-plugin@latest cursor-login
 ```
+
+`npx -y ensemble-plugin@latest <命令>` 也可以换成先 `npm install -g ensemble-plugin`，之后直接写 `ensemble <命令>`；从源码克隆运行时写 `node dist/ensemble.mjs <命令>`，本手册后文多用这种写法，意思相同。插件装好之后，宿主启动 MCP 桥用的是复制到宿主插件目录里的那份，不再依赖 npm 缓存或 `npx` 的临时目录（见“npm 包 `ensemble-plugin`”）。
 
 然后在 Codex 或 Cursor 里直接说：
 
@@ -460,25 +462,32 @@ npx vitest run --project node src/server/executors/process-list.test.ts src/serv
 
 看门狗脚本（`skills/ensemble-delegate/scripts/watch.mjs`）是纯 ESM、无依赖的独立文件，要能脱离本仓库运行（它随 `skills/` 被安装器原样复制，不经过 `scripts/build.mjs`，也不进 `dist/ensemble.mjs`），所以它自己带了几份与应用同口径的小拷贝：`formatDuration`、`sliceHead` / `sliceTail`（与 `src/shared/safe-slice.ts` 同一语义）、`clip` / `shortenPath`、`harnessLabel`、`isSettled`（对应应用里的 `isSessionSettled`）、`attentionKey` 与 `describeAttention` 的措辞、`resolveHome`。这些拷贝由 `test/watch-script.copies.test.ts` 与 `test/watch-wake.test.ts` 逐项对照应用里的实现（后者含 emoji 逐刀对照；`SessionPhase` 与 `AttentionKind` 各多一个取值，对照测试也会红，提醒去教脚本）。脚本里的判断逻辑都是时间由参数传入的纯函数（`test/watch-script.test.ts`）；巡检用可替换的读取函数驱动（`test/watch-script.pass.test.ts`），所以测试不等真实时间。测试夹具在 `test/watch-script.fixtures.ts`（值得留意的样本放在 `test/watch-script.shared.fixtures.ts`），唤醒、状态文件与来源过滤的新测试在 `test/watch-wake.test.ts`：合并窗口与时钟都走注入的 `sleep` / `now`，不等真实时间。
 
-### 打包成 npm 包（还没有发布）
+### npm 包 `ensemble-plugin`
 
-`package.json` 已按 npm 包配好，包名是 `ensemble-plugin`，但**还没有发布到 registry**，发布要用维护者自己的 npm 账号。包名不是 `ensemble`：它在 npm 上已被别的项目占用（2026-11-24 与 11-25 都查过）；`ensemble-plugin` 在这两次查时没有人用（`npm view` 返回 404，不保证发布时仍然如此，也不排除 npm 因与已有包名过于相似而拒绝）。装出来的插件目录与命令名仍叫 `ensemble`，不随包名变化。所以仓库首页 README 的安装提示词仍是“克隆仓库，再运行 `node dist/ensemble.mjs …`”；包发布之后，它与“快速开始”里的命令改成 `npx -y ensemble-plugin@latest …` 即可，其余不变。
+**已发布**：`ensemble-plugin@0.1.0`（MIT）于 2026-11-25 由维护者发布到 npm，`latest` 指向它。包名不是 `ensemble`：它在 npm 上已被别的项目占用。装出来的插件目录与命令名仍叫 `ensemble`，不随包名变化。仓库首页 README 的安装提示词与上面的“快速开始”用的就是 `npx -y ensemble-plugin@latest …`。
+
+第一次发布一个新包时，npm 会先在 registry 里公开一个占位版本 `0.0.0-stage`（只有一段说明文字），真正的版本稍后才上线——这次是在发布后约三分钟；这期间 `npx -y ensemble-plugin@latest` 拿到的是那个占位版。如果终端提示包被“暂存”（staged），要到 npmjs.com 账号设置里的 Staged Packages 用两步验证批准后才会生效（见 npm 官方文档 “Staged publishing”）。
 
 - `bin` 把 `ensemble` 命令指向 `dist/ensemble.mjs`；`files` 是白名单：`dist/`、插件清单与 MCP 配置、`skills/`、`assets/`、`NOTICE`，再加 npm 一定会带的 `package.json`、`README.md`、`LICENSE`。源码、测试、`vendor/`、构建脚本与文档都不进包（`npm pack` 当前是 48 个文件、约 1.04 MiB）。`test/plugin-package.test.ts` 守着这份白名单：它必须覆盖安装器要复制的每一项（`PLUGIN_PAYLOAD`），而且不能含源码类目录。
 - 包**没有任何依赖**：服务、MCP 桥与命令行已经打成单个文件，网页是预构建好的静态文件。`@cursor/sdk` 的许可证不允许随包分发，所以它既不是这个包的依赖、也不在包里，仍由 `install sdk` 在用户同意后装到 `<ENSEMBLE_HOME>/runtime`。
 - 装上包和把插件接进宿主是两件事：`npm install` / `npx` 只放下文件，不会（也不该）去改 Codex、Cursor 的用户级配置，所以没有 `postinstall`。接进宿主仍是 `ensemble install cursor|codex`，同样默认只展示计划、`--yes` 才写。它把包里的插件文件复制到宿主的插件目录，此后宿主启动 MCP 桥用的是复制出来的那份，不再依赖 npm 缓存或 `npx` 的临时目录。升级时重新运行 `install`（已经装上的目录有安装标记，会被覆盖），再让宿主重新载入；正在运行的本地服务要 `ensemble stop` 之后才会换成新版本。
-- 不推荐 `npm i -g github:JiangYain/Ensemble` 这类直接从 GitHub 安装：`package.json` 里有 `build` 脚本，npm 对 git 依赖会先在克隆里把 devDependencies 一并装上再准备，又慢又重。这一行为用一个同样带 `build` 脚本的探针包验证过，没有对本仓库真的跑完；发布到 registry 之后按包名安装不受影响。
+- 不推荐 `npm i -g github:JiangYain/Ensemble` 这类直接从 GitHub 安装：`package.json` 里有 `build` 脚本，npm 对 git 依赖会先在克隆里把 devDependencies 一并装上再准备，又慢又重。这一行为用一个同样带 `build` 脚本的探针包验证过，没有对本仓库真的跑完；按包名从 registry 安装（`npm install -g ensemble-plugin`、`npx`）不受影响，已在真实 registry 上走过（见下面的验证范围）。
 - 构建同时生成 `dist/THIRD-PARTY-NOTICES.txt`（见“第三方与许可”）。它和 `dist/ensemble.mjs`、`dist/web` 一样随仓库提交；改了依赖、`NOTICE` 或打包内容之后用 `npm run build` 重新生成，`test/plugin-package.test.ts` 会在它落后于 `package.json` 里锁定的版本，或没有带上 `NOTICE` 的最新内容时变红。
 
 ```powershell
 node scripts/check-package.mjs           # 打包 → 像用户那样装进临时前缀 → 运行 → 把插件装进临时的用户目录 → 启动其中的 MCP 桥、让它拉起服务并用模拟执行端走一遍委派 → 停服务 → 卸载；全程在临时目录里，不碰真实的状态目录、npm 全局前缀与你的 Cursor / Codex 配置
 node scripts/check-package.mjs --clean   # 发布前用：另外要求工作区没有未提交的改动
 npm publish                              # prepublishOnly 先 npm run build，再跑 check-package.mjs --clean
+node scripts/check-package.mjs --published   # 发布并生效之后用（也可以 npm run check:published）：对 registry 上的 ensemble-plugin@<package.json 里的版本> 做同样的检查，需要联网
 ```
 
-发布要由维护者自己做：先在终端里 `npm login`（在 npmjs.com 网页上注册、登录不等于命令行已登录；`npm whoami` 能显示用户名才算），再运行 `npm publish`；发布时 npm 会要求两步验证。包名不带作用域，不需要 `--access public`（以后改用带作用域的名字时，第一次发布要加它）。已发布的版本号不能重用，撤回也受 npm 政策限制，所以发布前先看一眼 `npm pack --dry-run` 列出的文件。
+发布要用维护者自己的 npm 账号：先在终端里 `npm login`（在 npmjs.com 网页上注册、登录不等于命令行已登录；`npm whoami` 能显示用户名才算）。账号必须开了两步验证，否则发布会被 npm 以 `403` 拒绝（“Two-factor authentication … is required to publish packages”）；不要改用能绕过两步验证的令牌，npm 自己的提示说这类令牌正在被限制。包名不带作用域，不需要 `--access public`（以后改用带作用域的名字时，第一次发布要加它）。
 
-**验证范围**：`check-package.mjs` 的检查在 Windows、Node 22.22.2、npm 10.9.7 上通过；故意改坏 4 处来检验它自己，都被抓到。`npx` 那一项用的是 tgz 的 `file:` 地址，所以“从 registry 下载再运行”这一段，以及 `npm publish` 在真实账号下的行为都没有走过。`bin` 在 Linux / macOS 上由 npm 建符号链接并设可执行位，没有在这两个系统上验证。
+发新版本的顺序：先提升版本号（`npm version <版本> --no-git-tag-version` 同时改 `package.json` 与 `package-lock.json`；已发布的版本号不能重用，撤回也受 npm 政策限制）→ `npm run build` → 提交（`dist/` 随仓库提交；`prepublishOnly` 会重新构建并要求工作区干净，没提交就会在发布前被拦下）→ `npm pack --dry-run` 看一眼文件清单 → `npm publish` → 生效之后运行 `npm run check:published`。
+
+**验证范围**：`check-package.mjs` 的全部检查在 Windows、Node 22.22.2、npm 10.9.7 上通过（2026-11-25），分两种：不带参数，对本地打出的包；`--published`，对 registry 上已发布的 `ensemble-plugin@0.1.0`——用不带你登录的临时用户目录与全新的 npm 缓存，从 registry 下载内容检查，按 `ensemble-plugin@0.1.0` 全局安装，再用 `npx ensemble-plugin@latest` 的方式运行；断网时它在第一步就失败，借此确认它确实在访问 registry。已发布的包与仓库提交 `b70c8b7` 里的 48 个文件逐字节相同，用该提交重新打包得到同样的 shasum。README 提示词里的每条命令也照字面（`npx -y ensemble-plugin@latest …`，临时用户目录与状态目录）跑过：`doctor`；`install cursor` 与 `install codex` 的 `--dry-run`；不带 `--yes` 的 `install cursor` 在非交互环境下拒绝（退出码 2）；`install cursor --yes` 装出的插件副本与仓库里的 `dist/ensemble.mjs` 逐字节相同；`install sdk --yes` 真的把 `@cursor/sdk` 装进了状态目录；`cursor-login --status`；`uninstall cursor --yes`。故意改坏脚本来检验它自己：本地模式 4 处、全局安装位置的桥检查 1 处，都被抓到。
+
+**没有验证**：Linux / macOS（`bin` 由 npm 建符号链接并设可执行位）；pnpm、yarn、bun；真实的 `cursor-login`（会在账号里创建 API Key）与 `install codex --yes`（会改 Codex 的配置）没有执行；用 npm 装出来的插件副本在真实的 Cursor / Codex 里的端到端（只在隔离的用户目录里用模拟执行端走过）；让一个真实的 Agent 照着提示词从头自己跑一遍。npm 页面上显示的 README 是 0.1.0 打包时的那份（仍是旧的“克隆仓库”提示词），新的 README 要等下一个版本才会出现在那里。
 
 ## 已知限制
 
