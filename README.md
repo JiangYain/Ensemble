@@ -2,6 +2,8 @@
 
 Ensemble is an [Agent Plugin](https://agent-plugins.org/) (MCP server + local service + web panel): your agent hands work to full Cursor, Codex, Pi, Claude Code, OpenCode and DSH sessions, and you watch and steer them live in a local web page.
 
+https://github.com/user-attachments/assets/f7290d1a-68c3-45f7-86eb-4116bf2809f0
+
 It is built for agents, so let your agent install it. Paste this into Cursor, Codex, Claude Code, or any agent that can run shell commands:
 
 ```text
