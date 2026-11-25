@@ -462,7 +462,7 @@ npx vitest run --project node src/server/executors/process-list.test.ts src/serv
 
 ### 打包成 npm 包（还没有发布）
 
-`package.json` 已按 npm 包配好，但**还没有发布到 registry**：包名 `ensemble` 在 npm 上已被别的项目占用（2026-11-24 查过），用什么名字（或作用域）要由维护者定，发布也要用维护者自己的 npm 账号。所以仓库首页 README 的安装提示词仍是“克隆仓库，再运行 `node dist/ensemble.mjs …`”；包发布之后，它与“快速开始”里的命令改成 `npx -y <包名>@latest …` 即可，其余不变。
+`package.json` 已按 npm 包配好，包名是 `ensemble-plugin`，但**还没有发布到 registry**，发布要用维护者自己的 npm 账号。包名不是 `ensemble`：它在 npm 上已被别的项目占用（2026-11-24 与 11-25 都查过）；`ensemble-plugin` 在这两次查时没有人用（`npm view` 返回 404，不保证发布时仍然如此，也不排除 npm 因与已有包名过于相似而拒绝）。装出来的插件目录与命令名仍叫 `ensemble`，不随包名变化。所以仓库首页 README 的安装提示词仍是“克隆仓库，再运行 `node dist/ensemble.mjs …`”；包发布之后，它与“快速开始”里的命令改成 `npx -y ensemble-plugin@latest …` 即可，其余不变。
 
 - `bin` 把 `ensemble` 命令指向 `dist/ensemble.mjs`；`files` 是白名单：`dist/`、插件清单与 MCP 配置、`skills/`、`assets/`、`NOTICE`，再加 npm 一定会带的 `package.json`、`README.md`、`LICENSE`。源码、测试、`vendor/`、构建脚本与文档都不进包（`npm pack` 当前是 48 个文件、约 1.04 MiB）。`test/plugin-package.test.ts` 守着这份白名单：它必须覆盖安装器要复制的每一项（`PLUGIN_PAYLOAD`），而且不能含源码类目录。
 - 包**没有任何依赖**：服务、MCP 桥与命令行已经打成单个文件，网页是预构建好的静态文件。`@cursor/sdk` 的许可证不允许随包分发，所以它既不是这个包的依赖、也不在包里，仍由 `install sdk` 在用户同意后装到 `<ENSEMBLE_HOME>/runtime`。
@@ -476,9 +476,9 @@ node scripts/check-package.mjs --clean   # 发布前用：另外要求工作区�
 npm publish                              # prepublishOnly 先 npm run build，再跑 check-package.mjs --clean
 ```
 
-发布要由维护者自己做：先在 `package.json` 里换一个可用的包名（带作用域的包第一次发布要加 `--access public`），再 `npm login`（新账号需要两步验证）。已发布的版本号不能重用，撤回也受 npm 政策限制，所以发布前先看一眼 `npm pack --dry-run` 列出的文件。
+发布要由维护者自己做：先在终端里 `npm login`（在 npmjs.com 网页上注册、登录不等于命令行已登录；`npm whoami` 能显示用户名才算），再运行 `npm publish`；发布时 npm 会要求两步验证。包名不带作用域，不需要 `--access public`（以后改用带作用域的名字时，第一次发布要加它）。已发布的版本号不能重用，撤回也受 npm 政策限制，所以发布前先看一眼 `npm pack --dry-run` 列出的文件。
 
-**验证范围**：`check-package.mjs` 的检查在 Windows、Node 22.22.2、npm 10.9.7 上通过；故意改坏 4 处来检验它自己，都被抓到。`npx` 那一项用的是 tgz 的 `file:` 地址，所以“从 registry 下载再运行”这一段，以及 `npm publish` 在真实账号下的行为都没有走过（`ensemble` 这个名字已被占用，按 npm 的规则现在直接发布应当被拒绝，没有实际试过）。`bin` 在 Linux / macOS 上由 npm 建符号链接并设可执行位，没有在这两个系统上验证。
+**验证范围**：`check-package.mjs` 的检查在 Windows、Node 22.22.2、npm 10.9.7 上通过；故意改坏 4 处来检验它自己，都被抓到。`npx` 那一项用的是 tgz 的 `file:` 地址，所以“从 registry 下载再运行”这一段，以及 `npm publish` 在真实账号下的行为都没有走过。`bin` 在 Linux / macOS 上由 npm 建符号链接并设可执行位，没有在这两个系统上验证。
 
 ## 已知限制
 

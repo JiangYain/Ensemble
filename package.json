@@ -1,5 +1,5 @@
 {
-  "name": "ensemble",
+  "name": "ensemble-plugin",
   "version": "0.1.0",
   "description": "Delegate work to full Cursor, Codex, Pi, Claude Code, OpenCode and DSH harness sessions, then watch and steer them live.",
   "keywords": [
